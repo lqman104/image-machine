@@ -1,3 +1,7 @@
 <resources>
   <string name="app_name">Image Machine</string>
+  <string name="home_menu">Home</string>
+  <string name="scan_menu">Search</string>
+  <string name="sort_by_name">Sort by name</string>
+  <string name="sort_by_type">Sort by type</string>
 </resources>
