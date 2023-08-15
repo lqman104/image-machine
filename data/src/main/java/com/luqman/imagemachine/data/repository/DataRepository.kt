@@ -15,9 +15,9 @@ class DataRepository(
 ) : DataSource {
 
     override suspend fun getAll(
-        sortBy: SortMenuType
+        sortBy: String
     ): Flow<List<Machine>> {
-        val sort = if (sortBy == SortMenuType.TYPE) {
+        val sort = if (sortBy == SortMenuType.TYPE.toString()) {
             MachineEntity.TYPE
         } else {
             MachineEntity.NAME

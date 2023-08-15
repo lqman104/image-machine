@@ -4,7 +4,6 @@ import com.luqman.imagemachine.core.model.Resource
 import com.luqman.imagemachine.core.model.UiText
 import com.luqman.imagemachine.data.repository.DataSource
 import com.luqman.imagemachine.data.repository.model.Machine
-import com.luqman.imagemachine.data.repository.model.SortMenuType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
@@ -15,7 +14,7 @@ class GetAllMachineUseCase @Inject constructor(
     private val repository: DataSource
 ) {
 
-    suspend operator fun invoke(sortMenuType: SortMenuType): Flow<Resource<List<Machine>>> {
+    suspend operator fun invoke(sortMenuType: String): Flow<Resource<List<Machine>>> {
         return repository.getAll(sortMenuType).map { data ->
             Resource.Success(data)
         }.onStart {

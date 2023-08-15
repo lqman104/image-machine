@@ -12,6 +12,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -19,14 +20,19 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.luqman.imagemachine.R
+import com.luqman.imagemachine.data.repository.model.SortMenuType
 import com.luqman.imagemachine.uikit.component.ErrorScreenComponent
 import com.luqman.imagemachine.uikit.component.LoadingComponent
 
 @Composable
 fun ListScreen(
+    sortMenuType: SortMenuType,
     modifier: Modifier = Modifier,
     viewModel: ListViewModel = hiltViewModel()
 ) {
+    LaunchedEffect(key1 = sortMenuType) {
+        viewModel.setType(sortMenuType)
+    }
     val state = viewModel.listState.collectAsState().value
     ListScreen(state, modifier) {
         viewModel.getList()

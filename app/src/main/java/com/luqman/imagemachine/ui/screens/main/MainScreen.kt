@@ -20,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -43,6 +44,36 @@ fun MainScreen(
     modifier: Modifier = Modifier
 ) {
     val navController = rememberNavController()
+    var sortMenuType by rememberSaveable {
+        mutableStateOf(SortMenuType.NAME)
+    }
+
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = navBackStackEntry?.destination
+    val isListScreen =
+        currentDestination?.hierarchy?.any { it.route == Graph.Main.LIST_PAGE } == true
+
+    MainScreen(
+        modifier,
+        navController,
+        rootNavHostController,
+        sortMenuType,
+        isListScreen
+    ) { newValue ->
+        sortMenuType = newValue
+    }
+}
+
+@Composable
+fun MainScreen(
+    modifier: Modifier = Modifier,
+    navController: NavHostController,
+    rootNavHostController: NavHostController,
+    sortMenuType: SortMenuType,
+    isListScreen: Boolean,
+    onSelectedSortMenu: (SortMenuType) -> Unit,
+) {
+
     Scaffold(
         modifier = modifier,
         floatingActionButton = {
@@ -51,13 +82,18 @@ fun MainScreen(
             }
         },
         bottomBar = {
-            BottomNavigation(navController)
+            BottomNavigation(navController, sortMenuType)
         },
         topBar = {
-            TopBar(pageName = "Text", showSortMenu = true)
+            TopBar(
+                pageName = "Text",
+                showSortMenu = isListScreen,
+                selectedMenu = sortMenuType,
+                onSelectedSortMenu = onSelectedSortMenu
+            )
         }
     ) { padding ->
-        MainGraph(controller = navController, padding = padding)
+        MainGraph(controller = navController, padding = padding, sortMenuType = sortMenuType)
     }
 }
 
@@ -66,9 +102,11 @@ fun MainScreen(
 fun TopBar(
     modifier: Modifier = Modifier,
     pageName: String,
-    showSortMenu: Boolean
+    showSortMenu: Boolean,
+    selectedMenu: SortMenuType,
+    onSelectedSortMenu: (SortMenuType) -> Unit
 ) {
-    var isMenuOpen by remember {
+    var isExpanded by remember {
         mutableStateOf(false)
     }
 
@@ -81,7 +119,7 @@ fun TopBar(
         actions = {
             if (showSortMenu) {
                 IconButton(onClick = {
-                    isMenuOpen = true
+                    isExpanded = true
                 }) {
                     Icon(
                         painter = painterResource(id = com.luqman.imagemachine.uikit.R.drawable.ic_sort),
@@ -91,14 +129,46 @@ fun TopBar(
             }
 
             SortMenuDialog(
-                selectedMenu = SortMenuType.NAME,
-                expanded = isMenuOpen
-            ) {
-                isMenuOpen = false
-            }
+                selectedMenu = selectedMenu,
+                isExpanded = isExpanded,
+                onSelectedSortMenu = onSelectedSortMenu,
+                onDismiss = {
+                    isExpanded = false
+                }
+            )
         }
     )
 
+}
+
+@Composable
+fun SortMenuDialog(
+    modifier: Modifier = Modifier,
+    isExpanded: Boolean,
+    selectedMenu: SortMenuType,
+    onSelectedSortMenu: (SortMenuType) -> Unit,
+    onDismiss: () -> Unit
+) {
+    DropdownMenu(
+        modifier = modifier,
+        expanded = isExpanded,
+        onDismissRequest = onDismiss,
+    ) {
+        // NOTE: don't trigger onSelectMenu if item already selected
+        if (selectedMenu == SortMenuType.NAME) {
+            SelectedSortMenu(name = stringResource(id = R.string.sort_by_name), onClick = onDismiss)
+            SortMenu(name = stringResource(id = R.string.sort_by_type), onClick = {
+                onSelectedSortMenu(SortMenuType.TYPE)
+                onDismiss()
+            })
+        } else {
+            SortMenu(name = stringResource(id = R.string.sort_by_name), onClick = {
+                onSelectedSortMenu(SortMenuType.NAME)
+                onDismiss()
+            })
+            SelectedSortMenu(name = stringResource(id = R.string.sort_by_type), onClick = onDismiss)
+        }
+    }
 }
 
 @Composable
@@ -108,28 +178,6 @@ fun FloatingActionButtonHome(
 ) {
     FloatingActionButton(modifier = modifier, onClick = onClick) {
         Icon(imageVector = Icons.Default.Add, contentDescription = "Add new machine")
-    }
-}
-
-@Composable
-fun SortMenuDialog(
-    modifier: Modifier = Modifier,
-    selectedMenu: SortMenuType,
-    expanded: Boolean,
-    onDismiss: () -> Unit
-) {
-    DropdownMenu(
-        modifier = modifier,
-        expanded = expanded,
-        onDismissRequest = onDismiss,
-    ) {
-        if (selectedMenu == SortMenuType.NAME) {
-            SelectedSortMenu(name = stringResource(id = R.string.sort_by_name), onClick = onDismiss)
-            SortMenu(name = stringResource(id = R.string.sort_by_type), onClick = onDismiss)
-        } else {
-            SortMenu(name = stringResource(id = R.string.sort_by_name), onClick = onDismiss)
-            SelectedSortMenu(name = stringResource(id = R.string.sort_by_type), onClick = onDismiss)
-        }
     }
 }
 
@@ -162,7 +210,8 @@ fun SortMenu(
 @Composable
 fun BottomNavigation(
     navController: NavHostController,
-    modifier: Modifier = Modifier
+    sortMenuType: SortMenuType,
+    modifier: Modifier = Modifier,
 ) {
     NavigationBar(modifier = modifier) {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -174,7 +223,12 @@ fun BottomNavigation(
                 label = { Text(stringResource(id = menu.name)) },
                 selected = currentDestination?.hierarchy?.any { it.route == menu.route } == true,
                 onClick = {
-                    navController.navigate(menu.route) {
+                    val route = if(menu.route == Graph.Main.LIST_PAGE) {
+                        Graph.Main.getMachineListByTypeRoute(sortMenuType.toString())
+                    } else {
+                        menu.route
+                    }
+                    navController.navigate(route) {
                         popUpTo(navController.graph.findStartDestination().id) {
                             saveState = true
                         }
@@ -190,5 +244,12 @@ fun BottomNavigation(
 @Preview
 @Composable
 fun MainScreenPreview() {
-    MainScreen(NavHostController(LocalContext.current))
+    MainScreen(
+        modifier = Modifier,
+        navController = NavHostController(LocalContext.current),
+        rootNavHostController = NavHostController(LocalContext.current),
+        sortMenuType = SortMenuType.NAME,
+        isListScreen = true,
+        onSelectedSortMenu = {},
+    )
 }

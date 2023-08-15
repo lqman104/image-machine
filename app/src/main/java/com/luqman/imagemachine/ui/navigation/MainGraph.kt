@@ -6,8 +6,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
+import com.luqman.imagemachine.data.repository.model.SortMenuType
+import com.luqman.imagemachine.ui.navigation.Graph.Main.TYPE_KEY
 import com.luqman.imagemachine.ui.screens.detail.DetailScreen
 import com.luqman.imagemachine.ui.screens.list.ListScreen
 import com.luqman.imagemachine.ui.screens.main.MainScreen
@@ -41,7 +45,8 @@ fun RootGraph(
 @Composable
 fun MainGraph(
     controller: NavHostController,
-    padding: PaddingValues
+    padding: PaddingValues,
+    sortMenuType: SortMenuType
 ) {
     NavHost(
         modifier = Modifier
@@ -50,8 +55,10 @@ fun MainGraph(
         navController = controller,
         startDestination = Graph.Main.LIST_PAGE
     ) {
-        composable(Graph.Main.LIST_PAGE) {
-            ListScreen()
+        composable(Graph.Main.LIST_PAGE, arguments = listOf(
+            navArgument(TYPE_KEY) { type = NavType.StringType }
+        )) {
+            ListScreen(sortMenuType)
         }
         composable(Graph.Main.SEARCH_PAGE) {
             SearchScreen()
@@ -66,9 +73,15 @@ object Graph {
     }
 
     object Main {
+        const val TYPE_KEY: String = "type"
+
         const val MAIN_PAGE = "main"
-        const val LIST_PAGE = "list_page"
+        const val LIST_PAGE = "list_page/{$TYPE_KEY}"
         const val SEARCH_PAGE = "search_page"
+
+        fun getMachineListByTypeRoute(type: String): String {
+            return LIST_PAGE.replace("{$TYPE_KEY}", type)
+        }
     }
 
     object Detail {
