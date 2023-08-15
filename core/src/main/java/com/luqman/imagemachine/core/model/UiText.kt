@@ -31,3 +31,7 @@ fun UiText.asString(context: Context): String {
         is UiText.StringResource -> context.getString(resId)
     }
 }
+
+fun Throwable.toUiText(): UiText {
+    return UiText.DynamicText(message.orEmpty())
+}

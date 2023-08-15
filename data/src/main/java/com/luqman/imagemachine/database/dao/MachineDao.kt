@@ -18,4 +18,7 @@ interface MachineDao {
 
     @Query("DELETE FROM machine_entity WHERE id=:id")
     suspend fun delete(id: Int)
+
+    @Query("DELETE FROM picture_entity WHERE machine_id=:machineId")
+    suspend fun deletePictureByMachineId(machineId: String)
 }

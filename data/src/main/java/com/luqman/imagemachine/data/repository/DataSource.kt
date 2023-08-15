@@ -7,4 +7,6 @@ interface DataSource {
     suspend fun getAll(
         sortBy: String
     ): Flow<List<Machine>>
+
+    suspend fun store(machine: Machine)
 }
