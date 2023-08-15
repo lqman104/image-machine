@@ -42,6 +42,12 @@ dependencies {
 
     implementation(AndroidDependencies.Kotlin.Coroutine.plugin)
 
+    // DATABASE
+    implementation(AndroidDependencies.AndroidX.Room.runtime)
+    implementation(AndroidDependencies.AndroidX.Room.ktx)
+    kapt(AndroidDependencies.AndroidX.Room.compiler)
+    testImplementation(AndroidDependencies.AndroidX.Room.testing)
+
     // DI
     implementation(AndroidDependencies.Di.Hilt.plugin)
     kapt(AndroidDependencies.Di.Hilt.compiler)
