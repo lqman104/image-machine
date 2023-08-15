@@ -2,7 +2,6 @@ package com.luqman.imagemachine.data.di
 
 import android.content.Context
 import androidx.room.Room
-import androidx.room.RoomDatabase
 import com.luqman.imagemachine.data.repository.DataRepository
 import com.luqman.imagemachine.data.repository.DataSource
 import com.luqman.imagemachine.database.MachineDatabase
