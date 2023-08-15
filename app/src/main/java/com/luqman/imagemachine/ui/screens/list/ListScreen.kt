@@ -30,7 +30,7 @@ fun ListScreen(
     modifier: Modifier = Modifier,
     viewModel: ListViewModel = hiltViewModel()
 ) {
-    LaunchedEffect(key1 = sortMenuType) {
+    LaunchedEffect(sortMenuType) {
         viewModel.setType(sortMenuType)
     }
     val state = viewModel.listState.collectAsState().value

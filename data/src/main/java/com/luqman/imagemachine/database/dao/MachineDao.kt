@@ -10,8 +10,11 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface MachineDao {
-    @Query("SELECT * FROM machine_entity ORDER BY :sort ASC")
-    fun getAll(sort: String): Flow<List<MachineEntity>>
+    @Query("SELECT * FROM machine_entity ORDER BY name ASC")
+    fun getAllSortByName(): Flow<List<MachineEntity>>
+
+    @Query("SELECT * FROM machine_entity ORDER BY type ASC")
+    fun getAllSortByType(): Flow<List<MachineEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(machine: MachineEntity, pictures: List<PictureEntity>)

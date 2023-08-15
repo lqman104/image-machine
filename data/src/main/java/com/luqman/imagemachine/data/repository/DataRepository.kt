@@ -18,13 +18,14 @@ class DataRepository(
     override suspend fun getAll(
         sortBy: String
     ): Flow<List<Machine>> {
-        val sort = if (sortBy == SortMenuType.TYPE.toString()) {
-            MachineEntity.TYPE
-        } else {
-            MachineEntity.NAME
-        }
+
         return withContext(dispatcher) {
-            dao.getAll(sort).map { list ->
+            val query = if (sortBy == SortMenuType.TYPE.toString()) {
+                dao.getAllSortByType()
+            } else {
+                dao.getAllSortByName()
+            }
+            query.map { list ->
                 list.map { entity ->
                     Machine(
                         id = entity.id,
