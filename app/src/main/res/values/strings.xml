@@ -4,4 +4,16 @@
   <string name="scan_menu">Search</string>
   <string name="sort_by_name">Sort by name</string>
   <string name="sort_by_type">Sort by type</string>
+
+  <string name="button_save">Save</string>
+  <string name="detail_page_title">Detail Machine</string>
+  <string name="machine_name_input_placeholder">Enter the machine name</string>
+  <string name="machine_name_input_label">Name</string>
+  <string name="machine_type_input_placeholder">Enter the machine type</string>
+  <string name="machine_type_input_label">Type</string>
+  <string name="machine_code_input_placeholder">Enter the machine code</string>
+  <string name="machine_code_input_label">Code</string>
+  <string name="machine_last_maintain_input_placeholder">Select last maintain date</string>
+  <string name="machine_last_maintain_input_label">Last Maintain Date</string>
+
 </resources>
