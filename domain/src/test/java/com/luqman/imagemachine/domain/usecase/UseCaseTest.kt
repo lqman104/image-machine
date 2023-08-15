@@ -5,7 +5,7 @@ import org.junit.Test
 
 class UseCaseTest {
 
-    private val validation = UseCase()
+    private val validation = GetAllMachineUseCase()
 
     // given address
     // when empty

@@ -32,6 +32,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.luqman.imagemachine.R
+import com.luqman.imagemachine.data.repository.model.SortMenuType
 import com.luqman.imagemachine.ui.navigation.Graph
 import com.luqman.imagemachine.ui.navigation.MainGraph
 import com.luqman.imagemachine.ui.navigation.MainMenu

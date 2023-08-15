@@ -36,6 +36,7 @@ android {
 
 dependencies {
     implementation(project(":core"))
+    implementation(project(":data"))
     implementation(AndroidDependencies.AndroidX.CoreKtx.plugin)
     implementation(AndroidDependencies.Logger.Timber.plugin)
 
