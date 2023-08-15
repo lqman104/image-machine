@@ -1,4 +1,4 @@
-package com.luqman.imagemachine.helper
+package com.luqman.imagemachine.core.helper
 
 import java.text.SimpleDateFormat
 import java.util.Date
