@@ -1,7 +1,6 @@
 package com.luqman.imagemachine.ui.screens.main
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.DropdownMenu
@@ -22,13 +21,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.window.PopupProperties
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -74,35 +71,33 @@ fun TopBar(
         mutableStateOf(false)
     }
 
-    Box {
-        TopAppBar(
-            scrollBehavior = enterAlwaysScrollBehavior(),
-            modifier = modifier,
-            title = {
-                Text(text = pageName)
-            },
-            actions = {
-                if (showSortMenu) {
-                    IconButton(onClick = {
-                        isMenuOpen = true
-                    }) {
-                        Icon(
-                            painter = painterResource(id = com.luqman.imagemachine.uikit.R.drawable.ic_sort),
-                            contentDescription = "Sort List"
-                        )
-                    }
+    TopAppBar(
+        modifier = modifier,
+        scrollBehavior = enterAlwaysScrollBehavior(),
+        title = {
+            Text(text = pageName)
+        },
+        actions = {
+            if (showSortMenu) {
+                IconButton(onClick = {
+                    isMenuOpen = true
+                }) {
+                    Icon(
+                        painter = painterResource(id = com.luqman.imagemachine.uikit.R.drawable.ic_sort),
+                        contentDescription = "Sort List"
+                    )
                 }
             }
-        )
 
-        SortMenuDialog(
-            modifier = Modifier.align(Alignment.TopEnd),
-            selectedMenu = SortMenuType.NAME,
-            expanded = isMenuOpen
-        ) {
-            isMenuOpen = false
+            SortMenuDialog(
+                selectedMenu = SortMenuType.NAME,
+                expanded = isMenuOpen
+            ) {
+                isMenuOpen = false
+            }
         }
-    }
+    )
+
 }
 
 @Composable
@@ -126,7 +121,6 @@ fun SortMenuDialog(
         modifier = modifier,
         expanded = expanded,
         onDismissRequest = onDismiss,
-        properties = PopupProperties()
     ) {
         if (selectedMenu == SortMenuType.NAME) {
             SelectedSortMenu(name = stringResource(id = R.string.sort_by_name), onClick = onDismiss)
