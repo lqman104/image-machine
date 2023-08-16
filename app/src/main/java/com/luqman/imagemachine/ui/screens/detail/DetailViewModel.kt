@@ -1,12 +1,10 @@
 package com.luqman.imagemachine.ui.screens.detail
 
-import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.luqman.imagemachine.core.model.Resource
 import com.luqman.imagemachine.data.repository.model.Machine
-import com.luqman.imagemachine.data.repository.model.Picture
 import com.luqman.imagemachine.domain.usecase.GetMachineUseCase
 import com.luqman.imagemachine.domain.usecase.StoreMachineUseCase
 import com.luqman.imagemachine.ui.navigation.Graph
@@ -27,12 +25,14 @@ class DetailViewModel @Inject constructor(
 ) : ViewModel() {
 
     private var id: String? = saveState.get<String>(Graph.Detail.ID_KEY)
+    private var machineId: String? = null
     private val _state: MutableStateFlow<DetailPageState> = MutableStateFlow(DetailPageState())
     val state = _state.asStateFlow()
 
     init {
         val id = id
         if (!id.isNullOrEmpty() && id != "{${Graph.Detail.ID_KEY}}") {
+            machineId = id
             getDetail(id)
         }
     }
@@ -92,7 +92,7 @@ class DetailViewModel @Inject constructor(
     }
 
     fun save() {
-        val id = id ?: UUID.randomUUID().toString()
+        val id = machineId ?: UUID.randomUUID().toString()
         val machine = with(_state.value) {
             Machine(
                 id = id,

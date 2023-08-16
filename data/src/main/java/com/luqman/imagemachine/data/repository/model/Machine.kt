@@ -8,5 +8,5 @@ data class Machine(
     var type: String,
     var code: String,
     var lastMaintain: Long,
-    var pictures: List<Picture> = listOf(),
+    var pictures: List<String> = listOf(),
 )

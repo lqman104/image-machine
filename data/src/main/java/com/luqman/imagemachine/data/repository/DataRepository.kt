@@ -1,7 +1,6 @@
 package com.luqman.imagemachine.data.repository
 
 import com.luqman.imagemachine.data.repository.model.Machine
-import com.luqman.imagemachine.data.repository.model.Picture
 import com.luqman.imagemachine.data.repository.model.SortMenuType
 import com.luqman.imagemachine.database.dao.MachineDao
 import com.luqman.imagemachine.database.entity.MachineEntity
@@ -46,7 +45,7 @@ class DataRepository(
             val pictures = machine.pictures.map { picture ->
                 PictureEntity(
                     machineId = machine.id,
-                    path = picture.path
+                    path = picture
                 )
             }
 
@@ -73,7 +72,7 @@ class DataRepository(
             code = machineEntity.code,
             lastMaintain = machineEntity.lastMaintain,
             pictures = pictures.map {
-                Picture(it.id, path = it.path)
+                it.path
             }
         )
     }
