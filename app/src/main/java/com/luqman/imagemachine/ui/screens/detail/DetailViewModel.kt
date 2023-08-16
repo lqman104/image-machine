@@ -3,6 +3,7 @@ package com.luqman.imagemachine.ui.screens.detail
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.luqman.imagemachine.data.repository.model.Picture
 import com.luqman.imagemachine.domain.usecase.StoreMachineUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,7 +23,11 @@ class DetailViewModel @Inject constructor(
     fun updateSelectedPictures(
         list: List<Uri>
     ) {
-        list.map { it.path }
+        _state.value = _state.value.copy(
+            data = _state.value.data.copy(
+                pictures = list.map { Picture(path = it.path.toString()) }.toMutableList()
+            )
+        )
     }
 
     fun save() {

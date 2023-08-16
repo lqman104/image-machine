@@ -100,7 +100,7 @@ fun DetailScreen(
         modifier = modifier,
         errorMessage = errorMessage,
         selectPicturesListener = { list ->
-            viewModel.state
+            viewModel.updateSelectedPictures(list)
         },
         onNavigateBack = {
             navController.navigateUp()
