@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -25,6 +26,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -51,6 +53,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -202,6 +205,11 @@ fun DetailScreen(
                         multiSelectImageLauncher.launch(
                             PickVisualMediaRequest(mediaType = ActivityResultContracts.PickVisualMedia.ImageOnly)
                         )
+                    },
+                    onDeleteImage = { picture ->
+                        itemsUri = itemsUri.toMutableList().apply {
+                            remove(picture)
+                        }
                     }
                 )
             }
@@ -279,37 +287,32 @@ private fun LazyGridScope.formSection(
 fun LazyGridScope.imageSection(
     modifier: Modifier = Modifier,
     pictures: List<Uri>,
+    onDeleteImage: (Uri) -> Unit,
     onClickImageAdd: () -> Unit
 ) {
+    val picturesSize = pictures.size
     item(span = { GridItemSpan(GRID_COUNT) }) {
         Column(modifier = modifier) {
             Text(
-                text = stringResource(id = R.string.image_subtitle_text),
+                text = stringResource(id = R.string.image_subtitle_text, picturesSize),
                 style = MaterialTheme.typography.titleMedium
             )
             Spacer(modifier = Modifier.height(16.dp))
         }
     }
 
-    if (pictures.size < 10) {
-        item {
-            ButtonAddImage(
-                onClick = onClickImageAdd
-            )
-        }
+    item {
+        ButtonAddImage(
+            enable = picturesSize < 10,
+            onClick = onClickImageAdd
+        )
     }
 
     items(pictures) { picture ->
-        Box(modifier = Modifier.aspectRatio(1f)) {
-            AsyncImage(
-                model = picture,
-                contentDescription = "",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(shape = RoundedCornerShape(corner = CornerSize(16.dp))),
-                contentScale = ContentScale.Crop,
-            )
-        }
+        ImageThumbnail(
+            picture = picture,
+            onDeleteImage = onDeleteImage
+        )
     }
 }
 
@@ -346,8 +349,33 @@ fun InputField(
 }
 
 @Composable
+fun ImageThumbnail(
+    modifier: Modifier = Modifier,
+    picture: Uri,
+    onDeleteImage: (Uri) -> Unit
+) {
+    Box(modifier = modifier.aspectRatio(1f)) {
+        AsyncImage(
+            model = picture,
+            contentDescription = "",
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(shape = RoundedCornerShape(corner = CornerSize(16.dp))),
+            contentScale = ContentScale.Crop,
+        )
+        IconButton(
+            modifier = Modifier.align(Alignment.TopEnd),
+            onClick = { onDeleteImage(picture) }
+        ) {
+            Icon(imageVector = Icons.Default.Close, contentDescription = "delete the image")
+        }
+    }
+}
+
+@Composable
 fun ButtonAddImage(
     modifier: Modifier = Modifier,
+    enable: Boolean,
     onClick: () -> Unit
 ) {
     val color = MaterialTheme.colorScheme.secondary
@@ -358,6 +386,7 @@ fun ButtonAddImage(
 
     Box(
         modifier = modifier
+            .background(if (!enable) Color.LightGray else Color.Transparent)
             .aspectRatio(1f)
             .drawBehind {
                 drawRoundRect(
@@ -366,7 +395,7 @@ fun ButtonAddImage(
                     cornerRadius = CornerRadius(8.dp.toPx())
                 )
             }
-            .clickable {
+            .clickable(enabled = enable) {
                 onClick()
             },
         contentAlignment = Alignment.Center,
@@ -384,9 +413,17 @@ fun DetailScreenPreview() {
 @Preview
 @Composable
 fun ButtonAddImagePreview() {
-    ButtonAddImage {
+    ButtonAddImage(
+        enable = true
+    ) {
 
     }
+}
+
+@Preview
+@Composable
+fun ImageThumbnailPreview() {
+    ImageThumbnail(picture = Uri.EMPTY, onDeleteImage = {})
 }
 
 object DetailScreen {

@@ -19,6 +19,6 @@
   <string name="empty_title_message">Machine empty</string>
   <string name="empty_desc_message">Click \"+\" button to add machine</string>
   <string name="error_title_message">An Error Occur</string>
-  <string name="image_subtitle_text">Images</string>
+  <string name="image_subtitle_text">Images (%d / 10)</string>
 
 </resources>
