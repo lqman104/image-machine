@@ -11,6 +11,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.luqman.imagemachine.data.repository.model.SortMenuType
+import com.luqman.imagemachine.ui.navigation.Graph.Detail.ID_KEY
 import com.luqman.imagemachine.ui.navigation.Graph.Main.TYPE_KEY
 import com.luqman.imagemachine.ui.screens.detail.DetailScreen
 import com.luqman.imagemachine.ui.screens.list.ListScreen
@@ -33,6 +34,7 @@ fun RootGraph(
         }
         composable(
             route = Graph.Detail.DETAIL_PAGE,
+            arguments = listOf(navArgument(ID_KEY) { type = NavType.StringType })
         ) {
             DetailScreen(navController = controller)
         }
@@ -44,6 +46,7 @@ fun RootGraph(
 
 @Composable
 fun MainGraph(
+    rootController: NavHostController,
     controller: NavHostController,
     padding: PaddingValues,
     sortMenuType: SortMenuType
@@ -55,10 +58,11 @@ fun MainGraph(
         navController = controller,
         startDestination = Graph.Main.LIST_PAGE
     ) {
-        composable(Graph.Main.LIST_PAGE, arguments = listOf(
-            navArgument(TYPE_KEY) { type = NavType.StringType }
-        )) {
-            ListScreen(sortMenuType)
+        composable(
+            route = Graph.Main.LIST_PAGE,
+            arguments = listOf(navArgument(TYPE_KEY) { type = NavType.StringType })
+        ) {
+            ListScreen(sortMenuType = sortMenuType, navHostController = rootController)
         }
         composable(Graph.Main.SEARCH_PAGE) {
             SearchScreen()
@@ -85,7 +89,17 @@ object Graph {
     }
 
     object Detail {
-        const val DETAIL_PAGE = "detail_page"
+        const val ID_KEY: String = "machine_id"
+
+        const val DETAIL_PAGE = "detail_page/{$ID_KEY}"
         const val PREVIEW_PAGE = "preview_page"
+
+        fun getDetailPage(): String {
+            return DETAIL_PAGE
+        }
+
+        fun getDetailPageById(id: String): String {
+            return DETAIL_PAGE.replace("{$ID_KEY}", id)
+        }
     }
 }

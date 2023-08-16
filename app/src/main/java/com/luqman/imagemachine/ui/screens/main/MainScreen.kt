@@ -78,7 +78,7 @@ fun MainScreen(
         modifier = modifier,
         floatingActionButton = {
             FloatingActionButtonHome {
-                rootNavHostController.navigate(Graph.Detail.DETAIL_PAGE)
+                rootNavHostController.navigate(Graph.Detail.getDetailPage())
             }
         },
         bottomBar = {
@@ -93,7 +93,12 @@ fun MainScreen(
             )
         }
     ) { padding ->
-        MainGraph(controller = navController, padding = padding, sortMenuType = sortMenuType)
+        MainGraph(
+            rootController = rootNavHostController,
+            controller = navController,
+            padding = padding,
+            sortMenuType = sortMenuType
+        )
     }
 }
 
@@ -223,7 +228,7 @@ fun BottomNavigation(
                 label = { Text(stringResource(id = menu.name)) },
                 selected = currentDestination?.hierarchy?.any { it.route == menu.route } == true,
                 onClick = {
-                    val route = if(menu.route == Graph.Main.LIST_PAGE) {
+                    val route = if (menu.route == Graph.Main.LIST_PAGE) {
                         Graph.Main.getMachineListByTypeRoute(sortMenuType.toString())
                     } else {
                         menu.route

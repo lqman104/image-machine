@@ -19,8 +19,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
 import com.luqman.imagemachine.R
 import com.luqman.imagemachine.data.repository.model.SortMenuType
+import com.luqman.imagemachine.ui.navigation.Graph
 import com.luqman.imagemachine.uikit.component.ErrorScreenComponent
 import com.luqman.imagemachine.uikit.component.LoadingComponent
 
@@ -28,22 +30,29 @@ import com.luqman.imagemachine.uikit.component.LoadingComponent
 fun ListScreen(
     sortMenuType: SortMenuType,
     modifier: Modifier = Modifier,
+    navHostController: NavHostController,
     viewModel: ListViewModel = hiltViewModel()
 ) {
     LaunchedEffect(sortMenuType) {
         viewModel.setType(sortMenuType)
     }
     val state = viewModel.listState.collectAsState().value
-    ListScreen(state, modifier) {
-        viewModel.getList()
-    }
+    ListScreen(
+        state = state,
+        modifier = modifier,
+        onRetryAction = { viewModel.getList() },
+        onItemClicked = { id ->
+            navHostController.navigate(Graph.Detail.getDetailPageById(id))
+        }
+    )
 }
 
 @Composable
 fun ListScreen(
     state: ListScreenState,
     modifier: Modifier = Modifier,
-    onRetryAction : () -> Unit
+    onRetryAction: () -> Unit,
+    onItemClicked: (String) -> Unit
 ) {
     LazyColumn(modifier = modifier, content = {
         when {
@@ -70,7 +79,9 @@ fun ListScreen(
                             modifier = Modifier.fillMaxWidth(),
                             name = item.name,
                             type = item.type
-                        )
+                        ) {
+                            onItemClicked(item.id)
+                        }
                     }
                 }
             }
@@ -95,12 +106,14 @@ fun ListScreen(
 fun Item(
     modifier: Modifier = Modifier,
     name: String,
-    type: String
+    type: String,
+    onClick: () -> Unit
 ) {
     Card(
         modifier = modifier
             .padding(horizontal = 16.dp, vertical = 8.dp),
-        onClick = {}) {
+        onClick = onClick
+    ) {
         Column(Modifier.padding(all = 8.dp)) {
             Text(name, style = MaterialTheme.typography.bodyMedium)
             Spacer(modifier = Modifier.height(4.dp))
@@ -112,7 +125,7 @@ fun Item(
 @Preview
 @Composable
 fun ListPreview() {
-    ListScreen(state = ListScreenState(loading = true)) {
+    ListScreen(state = ListScreenState(loading = true), onRetryAction = {}) {
 
     }
 }

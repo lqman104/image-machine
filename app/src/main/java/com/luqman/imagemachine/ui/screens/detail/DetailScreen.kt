@@ -69,6 +69,7 @@ import coil.compose.AsyncImage
 import com.luqman.imagemachine.R
 import com.luqman.imagemachine.core.helper.DateHelper.toDate
 import com.luqman.imagemachine.core.model.Resource
+import com.luqman.imagemachine.data.repository.model.Machine
 import com.luqman.imagemachine.ui.screens.detail.DetailScreen.GRID_COUNT
 import com.luqman.imagemachine.ui.screens.detail.SelectMultipleImageLauncher.multipleImagePickerLauncher
 import com.luqman.imagemachine.uikit.component.DatePickerComponent
@@ -85,16 +86,6 @@ fun DetailScreen(
         mutableStateOf(null)
     }
 
-    when (state.saveResult) {
-        is Resource.Loading -> LoadingComponent(Modifier.fillMaxSize())
-        is Resource.Success -> navController.navigateUp()
-        is Resource.Error -> {
-            errorMessage = state.saveResult?.error.toString()
-        }
-
-        else -> {}
-    }
-
     DetailScreen(
         state = state,
         modifier = modifier,
@@ -109,6 +100,16 @@ fun DetailScreen(
             viewModel.save()
         }
     )
+
+    when (state.saveResult) {
+        is Resource.Loading -> LoadingComponent(Modifier.fillMaxSize())
+        is Resource.Success -> navController.navigateUp()
+        is Resource.Error -> {
+            errorMessage = state.saveResult?.error.toString()
+        }
+
+        else -> {}
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -198,7 +199,7 @@ fun DetailScreen(
                     .fillMaxSize()
             ) {
                 this.formSection(
-                    state = state
+                    machine = state.data
                 )
                 this.imageSection(
                     pictures = itemsUri,
@@ -221,44 +222,44 @@ fun DetailScreen(
 
 private fun LazyGridScope.formSection(
     modifier: Modifier = Modifier,
-    state: DetailPageState
+    machine: Machine
 ) {
     item(span = { GridItemSpan(GRID_COUNT) }) {
         Column(modifier) {
             InputField(
                 modifier = Modifier.padding(bottom = 12.dp),
-                value = state.data.name,
+                value = machine.name,
                 label = stringResource(id = R.string.machine_name_input_label),
                 placeholder = stringResource(id = R.string.machine_name_input_placeholder),
                 onChange = {
-                    state.data.name = it
+                    machine.name = it
                 }
             )
 
             InputField(
                 modifier = Modifier.padding(bottom = 12.dp),
-                value = state.data.type,
+                value = machine.type,
                 label = stringResource(id = R.string.machine_type_input_label),
                 placeholder = stringResource(id = R.string.machine_type_input_placeholder),
                 onChange = {
-                    state.data.type = it
+                    machine.type = it
                 }
             )
 
             InputField(
                 modifier = Modifier.padding(bottom = 12.dp),
-                value = state.data.code,
+                value = machine.code,
                 label = stringResource(id = R.string.machine_code_input_label),
                 placeholder = stringResource(id = R.string.machine_code_input_placeholder),
                 onChange = {
-                    state.data.code = it
+                    machine.code = it
                 }
             )
 
             DateInputField(
-                value = state.data.lastMaintain,
+                value = machine.lastMaintain,
                 onChange = { date ->
-                    state.data.lastMaintain = date
+                    machine.lastMaintain = date
                 }
             )
 
