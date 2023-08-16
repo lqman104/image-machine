@@ -34,7 +34,10 @@ fun RootGraph(
         }
         composable(
             route = Graph.Detail.DETAIL_PAGE,
-            arguments = listOf(navArgument(ID_KEY) { type = NavType.StringType })
+            arguments = listOf(navArgument(ID_KEY) {
+                type = NavType.StringType
+                defaultValue = ""
+            })
         ) {
             DetailScreen(navController = controller)
         }

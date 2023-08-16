@@ -69,7 +69,6 @@ import coil.compose.AsyncImage
 import com.luqman.imagemachine.R
 import com.luqman.imagemachine.core.helper.DateHelper.toDate
 import com.luqman.imagemachine.core.model.Resource
-import com.luqman.imagemachine.data.repository.model.Machine
 import com.luqman.imagemachine.ui.screens.detail.DetailScreen.GRID_COUNT
 import com.luqman.imagemachine.ui.screens.detail.SelectMultipleImageLauncher.multipleImagePickerLauncher
 import com.luqman.imagemachine.uikit.component.DatePickerComponent
@@ -85,6 +84,9 @@ fun DetailScreen(
     var errorMessage: String? by remember {
         mutableStateOf(null)
     }
+    var isLoading: Boolean by remember {
+        mutableStateOf(false)
+    }
 
     DetailScreen(
         state = state,
@@ -95,20 +97,41 @@ fun DetailScreen(
         },
         onNavigateBack = {
             navController.navigateUp()
-        },
-        onSave = {
-            viewModel.save()
         }
-    )
-
+    ) {
+        viewModel.save()
+    }
     when (state.saveResult) {
-        is Resource.Loading -> LoadingComponent(Modifier.fillMaxSize())
-        is Resource.Success -> navController.navigateUp()
+        is Resource.Loading -> {
+            isLoading = true
+        }
+
+        is Resource.Success -> {
+            isLoading = false
+            navController.navigateUp()
+        }
+
         is Resource.Error -> {
+            isLoading = false
             errorMessage = state.saveResult?.error.toString()
         }
 
         else -> {}
+    }
+
+    when (state.detailGetResult) {
+        is Resource.Loading -> {
+            isLoading = true
+        }
+
+        is Resource.Error -> {
+            isLoading = false
+            errorMessage = state.saveResult?.error.toString()
+        }
+
+        else -> {
+            isLoading = false
+        }
     }
 }
 
@@ -139,6 +162,7 @@ fun DetailScreen(
     state: DetailPageState,
     modifier: Modifier = Modifier,
     selectPicturesListener: (List<Uri>) -> Unit,
+    isLoading: Boolean = false,
     errorMessage: String? = null,
     onNavigateBack: () -> Unit,
     onSave: () -> Unit
@@ -148,7 +172,7 @@ fun DetailScreen(
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
     var itemsUri: List<Uri> by rememberSaveable {
-        mutableStateOf(state.data.pictures.map { it.uri })
+        mutableStateOf(state.pictures.map { it.uri })
     }
 
     val multiSelectImageLauncher = multipleImagePickerLauncher(
@@ -190,31 +214,35 @@ fun DetailScreen(
         }
     ) { padding ->
         Box(modifier = Modifier.padding(padding)) {
-            LazyVerticalGrid(
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                columns = GridCells.Fixed(GRID_COUNT),
-                modifier = Modifier
-                    .fillMaxSize()
-            ) {
-                this.formSection(
-                    machine = state.data
-                )
-                this.imageSection(
-                    pictures = itemsUri,
-                    onClickImageAdd = {
-                        multiSelectImageLauncher?.launch(
-                            PickVisualMediaRequest(mediaType = ActivityResultContracts.PickVisualMedia.ImageOnly)
-                        )
-                    },
-                    onDeleteImage = { picture ->
-                        itemsUri = itemsUri.toMutableList().apply {
-                            remove(picture)
+            if (isLoading) {
+                LoadingComponent(Modifier.fillMaxSize())
+            } else {
+                LazyVerticalGrid(
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    columns = GridCells.Fixed(GRID_COUNT),
+                    modifier = Modifier
+                        .fillMaxSize()
+                ) {
+                    this.formSection(
+                        state = state
+                    )
+                    this.imageSection(
+                        pictures = itemsUri,
+                        onClickImageAdd = {
+                            multiSelectImageLauncher?.launch(
+                                PickVisualMediaRequest(mediaType = ActivityResultContracts.PickVisualMedia.ImageOnly)
+                            )
+                        },
+                        onDeleteImage = { picture ->
+                            itemsUri = itemsUri.toMutableList().apply {
+                                remove(picture)
+                            }
+                            selectPicturesListener(itemsUri)
                         }
-                        selectPicturesListener(itemsUri)
-                    }
-                )
+                    )
+                }
             }
         }
     }
@@ -222,44 +250,44 @@ fun DetailScreen(
 
 private fun LazyGridScope.formSection(
     modifier: Modifier = Modifier,
-    machine: Machine
+    state: DetailPageState
 ) {
-    item(span = { GridItemSpan(GRID_COUNT) }) {
+    item(span = { GridItemSpan(GRID_COUNT) }, key = "form machine", contentType = "form machine") {
         Column(modifier) {
             InputField(
                 modifier = Modifier.padding(bottom = 12.dp),
-                value = machine.name,
+                value = state.name,
                 label = stringResource(id = R.string.machine_name_input_label),
                 placeholder = stringResource(id = R.string.machine_name_input_placeholder),
                 onChange = {
-                    machine.name = it
+                    state.name = it
                 }
             )
 
             InputField(
                 modifier = Modifier.padding(bottom = 12.dp),
-                value = machine.type,
+                value = state.type,
                 label = stringResource(id = R.string.machine_type_input_label),
                 placeholder = stringResource(id = R.string.machine_type_input_placeholder),
                 onChange = {
-                    machine.type = it
+                    state.type = it
                 }
             )
 
             InputField(
                 modifier = Modifier.padding(bottom = 12.dp),
-                value = machine.code,
+                value = state.code,
                 label = stringResource(id = R.string.machine_code_input_label),
                 placeholder = stringResource(id = R.string.machine_code_input_placeholder),
                 onChange = {
-                    machine.code = it
+                    state.code = it
                 }
             )
 
             DateInputField(
-                value = machine.lastMaintain,
+                value = state.lastMaintain,
                 onChange = { date ->
-                    machine.lastMaintain = date
+                    state.lastMaintain = date
                 }
             )
 
@@ -454,6 +482,7 @@ fun DetailScreenPreview() {
         state = DetailPageState(),
         onNavigateBack = {},
         onSave = {},
+        isLoading = true,
         selectPicturesListener = {})
 }
 
