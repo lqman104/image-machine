@@ -34,10 +34,10 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -53,6 +53,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -67,7 +68,6 @@ import com.luqman.imagemachine.core.model.Resource
 import com.luqman.imagemachine.ui.screens.detail.DetailScreen.GRID_COUNT
 import com.luqman.imagemachine.uikit.component.DatePickerComponent
 import com.luqman.imagemachine.uikit.component.LoadingComponent
-
 
 @Composable
 fun DetailScreen(
@@ -107,10 +107,11 @@ fun DetailScreen(
 @Composable
 fun TopBar(
     modifier: Modifier = Modifier,
+    scrollBehavior: TopAppBarScrollBehavior,
     onNavigateBack: () -> Unit
 ) {
     TopAppBar(
-        scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(),
+        scrollBehavior = scrollBehavior,
         modifier = modifier,
         title = {
             Text(text = stringResource(id = R.string.detail_page_title))
@@ -123,6 +124,7 @@ fun TopBar(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailScreen(
     state: DetailPageState,
@@ -133,6 +135,7 @@ fun DetailScreen(
 ) {
 
     val snackbarHostState = remember { SnackbarHostState() }
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
     var isDateDialogShow by remember {
         mutableStateOf(false)
@@ -155,54 +158,52 @@ fun DetailScreen(
             )
         }
     }
-
-    Surface(modifier = modifier) {
-        Scaffold(
-            snackbarHost = {
-                SnackbarHost(hostState = snackbarHostState)
-            },
-            topBar = {
-                TopBar {
-                    // on navigate back
-                    onNavigateBack()
-                }
-            },
-            bottomBar = {
-                Button(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(all = 16.dp),
-                    onClick = onSave
-                ) {
-                    Text(text = stringResource(id = R.string.button_save))
-                }
+    Scaffold(
+        modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
+        },
+        topBar = {
+            TopBar(scrollBehavior = scrollBehavior) {
+                // on navigate back
+                onNavigateBack()
             }
-        ) { padding ->
-            Box(modifier = Modifier.padding(padding)) {
-                LazyVerticalGrid(
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    columns = GridCells.Fixed(GRID_COUNT),
-                    modifier = Modifier
-                        .fillMaxSize()
-                ) {
-                    this.formSection(
-                        state = state,
-                        isDateDialogShow = isDateDialogShow,
-                        onDialogDismiss = {
-                            isDateDialogShow = false
-                        }
-                    )
-                    this.imageSection(
-                        pictures = itemsUri,
-                        onClickImageAdd = {
-                            multiSelectImageLauncher.launch(
-                                PickVisualMediaRequest(mediaType = ActivityResultContracts.PickVisualMedia.ImageOnly)
-                            )
-                        }
-                    )
-                }
+        },
+        bottomBar = {
+            Button(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(all = 16.dp),
+                onClick = onSave
+            ) {
+                Text(text = stringResource(id = R.string.button_save))
+            }
+        }
+    ) { padding ->
+        Box(modifier = Modifier.padding(padding)) {
+            LazyVerticalGrid(
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                columns = GridCells.Fixed(GRID_COUNT),
+                modifier = Modifier
+                    .fillMaxSize()
+            ) {
+                this.formSection(
+                    state = state,
+                    isDateDialogShow = isDateDialogShow,
+                    onDialogDismiss = {
+                        isDateDialogShow = false
+                    }
+                )
+                this.imageSection(
+                    pictures = itemsUri,
+                    onClickImageAdd = {
+                        multiSelectImageLauncher.launch(
+                            PickVisualMediaRequest(mediaType = ActivityResultContracts.PickVisualMedia.ImageOnly)
+                        )
+                    }
+                )
             }
         }
     }
