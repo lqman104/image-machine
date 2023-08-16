@@ -84,10 +84,10 @@ class DetailViewModel @Inject constructor(
     }
 
     fun updateSelectedPictures(
-        list: List<Picture>
+        list: List<String>
     ) {
         _state.value = _state.value.copy(
-            pictures = list.map { it.copy() }.toMutableList()
+            pictures = list
         )
     }
 

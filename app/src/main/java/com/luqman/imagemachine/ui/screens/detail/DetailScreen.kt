@@ -68,11 +68,12 @@ import coil.compose.AsyncImage
 import com.luqman.imagemachine.R
 import com.luqman.imagemachine.core.helper.DateHelper.toDate
 import com.luqman.imagemachine.core.model.Resource
-import com.luqman.imagemachine.data.repository.model.Picture
 import com.luqman.imagemachine.ui.screens.detail.DetailScreen.GRID_COUNT
-import com.luqman.imagemachine.ui.screens.detail.SelectMultipleImageLauncher.multipleImagePickerLauncher
+import com.luqman.imagemachine.ui.screens.detail.SelectMultipleImageLauncher.rememberMultipleImagePickerLauncher
 import com.luqman.imagemachine.uikit.component.DatePickerComponent
 import com.luqman.imagemachine.uikit.component.LoadingComponent
+import timber.log.Timber
+import java.io.File
 
 @Composable
 fun DetailScreen(
@@ -165,7 +166,7 @@ fun TopBar(
 fun DetailScreen(
     state: DetailPageState,
     modifier: Modifier = Modifier,
-    selectPicturesListener: (List<Picture>) -> Unit,
+    selectPicturesListener: (List<String>) -> Unit,
     isLoading: Boolean = false,
     errorMessage: String? = null,
     onNameChanged: (String) -> Unit,
@@ -175,17 +176,13 @@ fun DetailScreen(
     onNavigateBack: () -> Unit,
     onSave: () -> Unit
 ) {
-    val itemsUri = state.pictures.map { it.uri }.toMutableList()
     val snackbarHostState = remember { SnackbarHostState() }
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
-    val multiSelectImageLauncher = multipleImagePickerLauncher(
+    val multiSelectImageLauncher = rememberMultipleImagePickerLauncher(
         maxSize = 10,
-        currentList = itemsUri,
-        callback = { uris ->
-            val pictures = uris.map { Picture(path = it.encodedPath.toString()) }.toMutableList()
-            selectPicturesListener(pictures)
-        }
+        currentList = state.pictures,
+        callback = selectPicturesListener
     )
 
     if (errorMessage.isNullOrEmpty().not()) {
@@ -237,7 +234,7 @@ fun DetailScreen(
                         onLastMaintainChanged = onLastMaintainChanged,
                     )
                     this.imageSection(
-                        pictures = itemsUri,
+                        pictures = state.pictures,
                         onClickImageAdd = {
                             multiSelectImageLauncher?.launch(
                                 PickVisualMediaRequest(mediaType = ActivityResultContracts.PickVisualMedia.ImageOnly)
@@ -302,7 +299,7 @@ private fun LazyGridScope.formSection(
 
 fun LazyGridScope.imageSection(
     modifier: Modifier = Modifier,
-    pictures: List<Uri>,
+    pictures: List<String>,
     onDeleteImage: (Int) -> Unit,
     onClickImageAdd: () -> Unit
 ) {
@@ -401,17 +398,20 @@ fun DateInputField(
 @Composable
 fun ImageThumbnail(
     modifier: Modifier = Modifier,
-    picture: Uri,
+    picture: String,
     onDeleteImage: () -> Unit
 ) {
     Box(modifier = modifier.aspectRatio(1f)) {
         AsyncImage(
-            model = picture,
+            model = Uri.fromFile(File(picture)),
             contentDescription = "",
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(shape = RoundedCornerShape(corner = CornerSize(16.dp))),
             contentScale = ContentScale.Crop,
+            onError = {
+                Timber.e(it.result.throwable)
+            }
         )
         IconButton(
             modifier = Modifier
@@ -497,7 +497,7 @@ fun ButtonAddImagePreview() {
 @Preview
 @Composable
 fun ImageThumbnailPreview() {
-    ImageThumbnail(picture = Uri.EMPTY, onDeleteImage = {})
+    ImageThumbnail(picture = "", onDeleteImage = {})
 }
 
 object DetailScreen {
