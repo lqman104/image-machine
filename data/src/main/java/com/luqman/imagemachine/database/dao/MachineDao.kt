@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.luqman.imagemachine.database.entity.MachineEntity
+import com.luqman.imagemachine.database.entity.MachineWithPictures
 import com.luqman.imagemachine.database.entity.PictureEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -17,7 +18,7 @@ interface MachineDao {
     fun getAllSortByType(): Flow<List<MachineEntity>>
 
     @Query("SELECT * FROM machine_entity WHERE id = :id")
-    suspend fun get(id: String): MachineEntity
+    suspend fun get(id: String): MachineWithPictures
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(machine: MachineEntity, pictures: List<PictureEntity>)

@@ -1,9 +1,11 @@
 package com.luqman.imagemachine.data.repository
 
 import com.luqman.imagemachine.data.repository.model.Machine
+import com.luqman.imagemachine.data.repository.model.Picture
 import com.luqman.imagemachine.data.repository.model.SortMenuType
 import com.luqman.imagemachine.database.dao.MachineDao
 import com.luqman.imagemachine.database.entity.MachineEntity
+import com.luqman.imagemachine.database.entity.MachineWithPictures
 import com.luqman.imagemachine.database.entity.PictureEntity
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
@@ -60,6 +62,19 @@ class DataRepository(
             type = type,
             code = code,
             lastMaintain = lastMaintain,
+        )
+    }
+
+    private fun MachineWithPictures.toMachine(): Machine {
+        return Machine(
+            id = machineEntity.id,
+            name = machineEntity.name,
+            type = machineEntity.type,
+            code = machineEntity.code,
+            lastMaintain = machineEntity.lastMaintain,
+            pictures = pictures.map {
+                Picture(it.id, path = it.path)
+            }
         )
     }
 
