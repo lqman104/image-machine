@@ -11,5 +11,5 @@ data class DetailPageState(
     var type: String = "",
     var code: String = "",
     var lastMaintain: Long = 0,
-    var pictures: MutableList<Picture> = mutableListOf(),
+    var pictures: List<Picture> = listOf(),
 )

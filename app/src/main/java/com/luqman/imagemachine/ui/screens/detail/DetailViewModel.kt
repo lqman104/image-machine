@@ -59,11 +59,35 @@ class DetailViewModel @Inject constructor(
         }
     }
 
+    fun updateName(value: String) {
+        _state.value = _state.value.copy(
+            name = value
+        )
+    }
+
+    fun updateType(value: String) {
+        _state.value = _state.value.copy(
+            type = value
+        )
+    }
+
+    fun updateCode(value: String) {
+        _state.value = _state.value.copy(
+            code = value
+        )
+    }
+
+    fun updateLastMaintain(value: Long) {
+        _state.value = _state.value.copy(
+            lastMaintain = value
+        )
+    }
+
     fun updateSelectedPictures(
-        list: List<Uri>
+        list: List<Picture>
     ) {
         _state.value = _state.value.copy(
-            pictures = list.map { Picture(path = it.encodedPath.toString()) }.toMutableList()
+            pictures = list.map { it.copy() }.toMutableList()
         )
     }
 

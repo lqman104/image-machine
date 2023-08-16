@@ -21,7 +21,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -48,7 +48,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -69,6 +68,7 @@ import coil.compose.AsyncImage
 import com.luqman.imagemachine.R
 import com.luqman.imagemachine.core.helper.DateHelper.toDate
 import com.luqman.imagemachine.core.model.Resource
+import com.luqman.imagemachine.data.repository.model.Picture
 import com.luqman.imagemachine.ui.screens.detail.DetailScreen.GRID_COUNT
 import com.luqman.imagemachine.ui.screens.detail.SelectMultipleImageLauncher.multipleImagePickerLauncher
 import com.luqman.imagemachine.uikit.component.DatePickerComponent
@@ -97,7 +97,11 @@ fun DetailScreen(
         },
         onNavigateBack = {
             navController.navigateUp()
-        }
+        },
+        onNameChanged = { viewModel.updateName(it) },
+        onTypeChanged = { viewModel.updateType(it) },
+        onCodeChanged = { viewModel.updateCode(it) },
+        onLastMaintainChanged = { viewModel.updateLastMaintain(it) },
     ) {
         viewModel.save()
     }
@@ -161,26 +165,26 @@ fun TopBar(
 fun DetailScreen(
     state: DetailPageState,
     modifier: Modifier = Modifier,
-    selectPicturesListener: (List<Uri>) -> Unit,
+    selectPicturesListener: (List<Picture>) -> Unit,
     isLoading: Boolean = false,
     errorMessage: String? = null,
+    onNameChanged: (String) -> Unit,
+    onTypeChanged: (String) -> Unit,
+    onCodeChanged: (String) -> Unit,
+    onLastMaintainChanged: (Long) -> Unit,
     onNavigateBack: () -> Unit,
     onSave: () -> Unit
 ) {
-
+    val itemsUri = state.pictures.map { it.uri }.toMutableList()
     val snackbarHostState = remember { SnackbarHostState() }
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-
-    var itemsUri: List<Uri> by rememberSaveable {
-        mutableStateOf(state.pictures.map { it.uri })
-    }
 
     val multiSelectImageLauncher = multipleImagePickerLauncher(
         maxSize = 10,
         currentList = itemsUri,
-        callback = { result ->
-            itemsUri = result
-            selectPicturesListener(itemsUri)
+        callback = { uris ->
+            val pictures = uris.map { Picture(path = it.encodedPath.toString()) }.toMutableList()
+            selectPicturesListener(pictures)
         }
     )
 
@@ -226,7 +230,11 @@ fun DetailScreen(
                         .fillMaxSize()
                 ) {
                     this.formSection(
-                        state = state
+                        state = state,
+                        onNameChanged = onNameChanged,
+                        onTypeChanged = onTypeChanged,
+                        onCodeChanged = onCodeChanged,
+                        onLastMaintainChanged = onLastMaintainChanged,
                     )
                     this.imageSection(
                         pictures = itemsUri,
@@ -235,11 +243,11 @@ fun DetailScreen(
                                 PickVisualMediaRequest(mediaType = ActivityResultContracts.PickVisualMedia.ImageOnly)
                             )
                         },
-                        onDeleteImage = { picture ->
-                            itemsUri = itemsUri.toMutableList().apply {
-                                remove(picture)
+                        onDeleteImage = { index ->
+                            val list = state.pictures.toMutableList().apply {
+                                removeAt(index)
                             }
-                            selectPicturesListener(itemsUri)
+                            selectPicturesListener(list)
                         }
                     )
                 }
@@ -250,7 +258,11 @@ fun DetailScreen(
 
 private fun LazyGridScope.formSection(
     modifier: Modifier = Modifier,
-    state: DetailPageState
+    state: DetailPageState,
+    onNameChanged: (String) -> Unit,
+    onTypeChanged: (String) -> Unit,
+    onCodeChanged: (String) -> Unit,
+    onLastMaintainChanged: (Long) -> Unit,
 ) {
     item(span = { GridItemSpan(GRID_COUNT) }, key = "form machine", contentType = "form machine") {
         Column(modifier) {
@@ -259,9 +271,7 @@ private fun LazyGridScope.formSection(
                 value = state.name,
                 label = stringResource(id = R.string.machine_name_input_label),
                 placeholder = stringResource(id = R.string.machine_name_input_placeholder),
-                onChange = {
-                    state.name = it
-                }
+                onChange = onNameChanged
             )
 
             InputField(
@@ -269,9 +279,7 @@ private fun LazyGridScope.formSection(
                 value = state.type,
                 label = stringResource(id = R.string.machine_type_input_label),
                 placeholder = stringResource(id = R.string.machine_type_input_placeholder),
-                onChange = {
-                    state.type = it
-                }
+                onChange = onTypeChanged
             )
 
             InputField(
@@ -279,16 +287,12 @@ private fun LazyGridScope.formSection(
                 value = state.code,
                 label = stringResource(id = R.string.machine_code_input_label),
                 placeholder = stringResource(id = R.string.machine_code_input_placeholder),
-                onChange = {
-                    state.code = it
-                }
+                onChange = onCodeChanged
             )
 
             DateInputField(
                 value = state.lastMaintain,
-                onChange = { date ->
-                    state.lastMaintain = date
-                }
+                onChange = onLastMaintainChanged
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -299,7 +303,7 @@ private fun LazyGridScope.formSection(
 fun LazyGridScope.imageSection(
     modifier: Modifier = Modifier,
     pictures: List<Uri>,
-    onDeleteImage: (Uri) -> Unit,
+    onDeleteImage: (Int) -> Unit,
     onClickImageAdd: () -> Unit
 ) {
     val picturesSize = pictures.size
@@ -320,10 +324,12 @@ fun LazyGridScope.imageSection(
         )
     }
 
-    items(pictures) { picture ->
+    itemsIndexed(pictures) { index, picture ->
         ImageThumbnail(
             picture = picture,
-            onDeleteImage = onDeleteImage
+            onDeleteImage = {
+                onDeleteImage(index)
+            }
         )
     }
 }
@@ -336,17 +342,10 @@ fun InputField(
     label: String,
     onChange: (String) -> Unit
 ) {
-    var text by rememberSaveable {
-        mutableStateOf(value)
-    }
-
     OutlinedTextField(
-        value = text,
+        value = value,
         modifier = modifier.fillMaxWidth(),
-        onValueChange = {
-            text = it
-            onChange(text)
-        },
+        onValueChange = onChange,
         label = {
             Text(text = label)
         },
@@ -365,15 +364,10 @@ fun DateInputField(
     var isDateDialogShow by remember {
         mutableStateOf(false)
     }
-
-    var dateValue: Long? by rememberSaveable {
-        // make sure the form is null when first launch
-        val longDate = if (value != null && value == 0L) null else value
-        mutableStateOf(longDate)
-    }
+    val longDate = if (value != null && value == 0L) null else value
 
     OutlinedTextField(
-        value = dateValue.toDate(),
+        value = longDate.toDate(),
         modifier = modifier
             .fillMaxWidth()
             .clickable {
@@ -392,12 +386,11 @@ fun DateInputField(
 
     if (isDateDialogShow) {
         DatePickerComponent(
-            selectedDate = dateValue,
+            selectedDate = longDate,
             onDismiss = { selectedDate ->
                 isDateDialogShow = false
 
                 if (selectedDate != null) {
-                    dateValue = selectedDate
                     onChange(selectedDate)
                 }
             }
@@ -409,7 +402,7 @@ fun DateInputField(
 fun ImageThumbnail(
     modifier: Modifier = Modifier,
     picture: Uri,
-    onDeleteImage: (Uri) -> Unit
+    onDeleteImage: () -> Unit
 ) {
     Box(modifier = modifier.aspectRatio(1f)) {
         AsyncImage(
@@ -431,7 +424,7 @@ fun ImageThumbnail(
                 .background(color = MaterialTheme.colorScheme.secondaryContainer)
                 .size(20.dp)
                 .align(Alignment.TopEnd),
-            onClick = { onDeleteImage(picture) }
+            onClick = { onDeleteImage() }
         ) {
             Icon(
                 modifier = Modifier.size(12.dp),
@@ -483,7 +476,12 @@ fun DetailScreenPreview() {
         onNavigateBack = {},
         onSave = {},
         isLoading = true,
-        selectPicturesListener = {})
+        selectPicturesListener = {},
+        onNameChanged = {},
+        onTypeChanged = {},
+        onCodeChanged = {},
+        onLastMaintainChanged = {},
+    )
 }
 
 @Preview
