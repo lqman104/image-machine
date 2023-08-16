@@ -85,11 +85,11 @@ fun DetailScreen(
         mutableStateOf(null)
     }
 
-    when (state.state) {
+    when (state.saveResult) {
         is Resource.Loading -> LoadingComponent(Modifier.fillMaxSize())
         is Resource.Success -> navController.navigateUp()
         is Resource.Error -> {
-            errorMessage = state.state?.error.toString()
+            errorMessage = state.saveResult?.error.toString()
         }
 
         else -> {}
@@ -142,10 +142,6 @@ fun DetailScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
-    var isDateDialogShow by remember {
-        mutableStateOf(false)
-    }
-
     var itemsUri: List<Uri> by rememberSaveable {
         mutableStateOf(state.data.pictures.map { it.uri })
     }
@@ -195,11 +191,7 @@ fun DetailScreen(
                     .fillMaxSize()
             ) {
                 this.formSection(
-                    state = state,
-                    isDateDialogShow = isDateDialogShow,
-                    onDialogDismiss = {
-                        isDateDialogShow = false
-                    }
+                    state = state
                 )
                 this.imageSection(
                     pictures = itemsUri,
@@ -221,9 +213,7 @@ fun DetailScreen(
 
 private fun LazyGridScope.formSection(
     modifier: Modifier = Modifier,
-    state: DetailPageState,
-    isDateDialogShow: Boolean,
-    onDialogDismiss: () -> Unit
+    state: DetailPageState
 ) {
     item(span = { GridItemSpan(GRID_COUNT) }) {
         Column(modifier) {
@@ -257,29 +247,12 @@ private fun LazyGridScope.formSection(
                 }
             )
 
-            InputField(
-                modifier = Modifier.clickable {
-                    onDialogDismiss()
-                },
-                readOnly = true,
-                enable = false,
-                value = state.data.lastMaintain.toDate(),
-                label = stringResource(id = R.string.machine_last_maintain_input_label),
-                placeholder = stringResource(id = R.string.machine_last_maintain_input_placeholder),
-                onChange = {
-                    state.data.lastMaintain = it.dateToLong()
+            DateInputField(
+                value = state.data.lastMaintain,
+                onChange = { date ->
+                    state.data.lastMaintain = date
                 }
             )
-
-            if (isDateDialogShow) {
-                DatePickerComponent(
-                    selectedDate = state.data.lastMaintain,
-                    onDismiss = { selectedDate ->
-                        state.data.lastMaintain = (selectedDate ?: 0)
-                        onDialogDismiss()
-                    }
-                )
-            }
 
             Spacer(modifier = Modifier.height(24.dp))
         }
@@ -321,8 +294,6 @@ fun LazyGridScope.imageSection(
 @Composable
 fun InputField(
     modifier: Modifier = Modifier,
-    readOnly: Boolean = false,
-    enable: Boolean = true,
     value: String,
     placeholder: String,
     label: String,
@@ -335,8 +306,6 @@ fun InputField(
     OutlinedTextField(
         value = text,
         modifier = modifier.fillMaxWidth(),
-        enabled = enable,
-        readOnly = readOnly,
         onValueChange = {
             text = it
             onChange(text)
@@ -348,6 +317,53 @@ fun InputField(
             Text(text = placeholder)
         },
     )
+}
+
+@Composable
+fun DateInputField(
+    modifier: Modifier = Modifier,
+    value: Long? = null,
+    onChange: (Long) -> Unit
+) {
+    var isDateDialogShow by remember {
+        mutableStateOf(false)
+    }
+
+    var dateValue: Long? by rememberSaveable {
+        // make sure the form is null when first launch
+        val longDate = if(value != null && value == 0L) null else value
+        mutableStateOf(longDate)
+    }
+
+    OutlinedTextField(
+        value = dateValue.toDate(),
+        modifier = modifier.fillMaxWidth().clickable {
+            isDateDialogShow = true
+        },
+        enabled = false,
+        readOnly = true,
+        onValueChange = {},
+        label = {
+            Text(text = stringResource(id = R.string.machine_last_maintain_input_label))
+        },
+        placeholder = {
+            Text(text = stringResource(id = R.string.machine_last_maintain_input_placeholder))
+        },
+    )
+
+    if (isDateDialogShow) {
+        DatePickerComponent(
+            selectedDate = dateValue,
+            onDismiss = { selectedDate ->
+                isDateDialogShow = false
+
+                if (selectedDate != null) {
+                    dateValue = selectedDate
+                    onChange(selectedDate)
+                }
+            }
+        )
+    }
 }
 
 @Composable

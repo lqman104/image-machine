@@ -21,7 +21,7 @@ class DetailViewModel @Inject constructor(
     fun save() {
         useCase(_state.value.data).onEach { response ->
             _state.value = _state.value.copy(
-                state = response
+                saveResult = response
             )
         }.launchIn(viewModelScope)
     }

@@ -4,7 +4,7 @@ import com.luqman.imagemachine.core.model.Resource
 import com.luqman.imagemachine.data.repository.model.Machine
 
 data class DetailPageState(
-    var state: Resource<Any>? = null,
+    var saveResult: Resource<Any>? = null,
     val data: Machine = Machine(
         name = "",
         type = "",
