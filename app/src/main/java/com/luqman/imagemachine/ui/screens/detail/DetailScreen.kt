@@ -5,6 +5,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,11 +17,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -65,7 +68,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.luqman.imagemachine.R
-import com.luqman.imagemachine.core.helper.DateHelper.dateToLong
 import com.luqman.imagemachine.core.helper.DateHelper.toDate
 import com.luqman.imagemachine.core.model.Resource
 import com.luqman.imagemachine.ui.screens.detail.DetailScreen.GRID_COUNT
@@ -226,7 +228,7 @@ private fun LazyGridScope.formSection(
     item(span = { GridItemSpan(GRID_COUNT) }) {
         Column(modifier) {
             InputField(
-
+                modifier = Modifier.padding(bottom = 12.dp),
                 value = state.data.name,
                 label = stringResource(id = R.string.machine_name_input_label),
                 placeholder = stringResource(id = R.string.machine_name_input_placeholder),
@@ -236,7 +238,7 @@ private fun LazyGridScope.formSection(
             )
 
             InputField(
-
+                modifier = Modifier.padding(bottom = 12.dp),
                 value = state.data.type,
                 label = stringResource(id = R.string.machine_type_input_label),
                 placeholder = stringResource(id = R.string.machine_type_input_placeholder),
@@ -246,7 +248,7 @@ private fun LazyGridScope.formSection(
             )
 
             InputField(
-
+                modifier = Modifier.padding(bottom = 12.dp),
                 value = state.data.code,
                 label = stringResource(id = R.string.machine_code_input_label),
                 placeholder = stringResource(id = R.string.machine_code_input_placeholder),
@@ -364,10 +366,24 @@ fun ImageThumbnail(
             contentScale = ContentScale.Crop,
         )
         IconButton(
-            modifier = Modifier.align(Alignment.TopEnd),
+            modifier = Modifier
+                .border(
+                    shape = CircleShape,
+                    width = 1.dp,
+                    color = Color.Transparent
+                )
+                .padding(8.dp)
+                .background(color = MaterialTheme.colorScheme.secondaryContainer)
+                .size(20.dp)
+                .align(Alignment.TopEnd),
             onClick = { onDeleteImage(picture) }
         ) {
-            Icon(imageVector = Icons.Default.Close, contentDescription = "delete the image")
+            Icon(
+                modifier = Modifier.size(12.dp),
+                imageVector = Icons.Default.Close,
+                contentDescription = "delete the image",
+                tint = MaterialTheme.colorScheme.onSecondaryContainer
+            )
         }
     }
 }
