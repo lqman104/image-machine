@@ -1,5 +1,6 @@
 package com.luqman.imagemachine.ui.screens.detail
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.luqman.imagemachine.domain.usecase.StoreMachineUseCase
@@ -17,6 +18,12 @@ class DetailViewModel @Inject constructor(
 
     private val _state: MutableStateFlow<DetailPageState> = MutableStateFlow(DetailPageState())
     val state = _state.asStateFlow()
+
+    fun updateSelectedPictures(
+        list: List<Uri>
+    ) {
+        list.map { it.path }
+    }
 
     fun save() {
         useCase(_state.value.data).onEach { response ->

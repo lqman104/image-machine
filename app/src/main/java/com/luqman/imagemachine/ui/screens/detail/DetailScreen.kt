@@ -99,6 +99,9 @@ fun DetailScreen(
         state = state,
         modifier = modifier,
         errorMessage = errorMessage,
+        selectPicturesListener = { list ->
+            viewModel.state
+        },
         onNavigateBack = {
             navController.navigateUp()
         },
@@ -134,6 +137,7 @@ fun TopBar(
 fun DetailScreen(
     state: DetailPageState,
     modifier: Modifier = Modifier,
+    selectPicturesListener: (List<Uri>) -> Unit,
     errorMessage: String? = null,
     onNavigateBack: () -> Unit,
     onSave: () -> Unit
@@ -151,6 +155,7 @@ fun DetailScreen(
         currentList = itemsUri,
         callback = { result ->
             itemsUri = result
+            selectPicturesListener(itemsUri)
         }
     )
 
@@ -206,6 +211,7 @@ fun DetailScreen(
                         itemsUri = itemsUri.toMutableList().apply {
                             remove(picture)
                         }
+                        selectPicturesListener(itemsUri)
                     }
                 )
             }
@@ -443,7 +449,11 @@ fun ButtonAddImage(
 @Preview
 @Composable
 fun DetailScreenPreview() {
-    DetailScreen(state = DetailPageState(), onNavigateBack = {}, onSave = {})
+    DetailScreen(
+        state = DetailPageState(),
+        onNavigateBack = {},
+        onSave = {},
+        selectPicturesListener = {})
 }
 
 @Preview
