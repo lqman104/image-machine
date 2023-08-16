@@ -16,6 +16,9 @@ interface MachineDao {
     @Query("SELECT * FROM machine_entity ORDER BY type ASC")
     fun getAllSortByType(): Flow<List<MachineEntity>>
 
+    @Query("SELECT * FROM machine_entity WHERE id = :id")
+    suspend fun get(id: String): MachineEntity
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(machine: MachineEntity, pictures: List<PictureEntity>)
 

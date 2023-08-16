@@ -26,28 +26,20 @@ class DataRepository(
                 dao.getAllSortByName()
             }
             query.map { list ->
-                list.map { entity ->
-                    Machine(
-                        id = entity.id,
-                        name = entity.name,
-                        type = entity.type,
-                        code = entity.code,
-                        lastMaintain = entity.lastMaintain,
-                    )
-                }
+                list.map { entity -> entity.toMachine() }
             }
+        }
+    }
+
+    override suspend fun get(id: String): Machine {
+        return withContext(dispatcher) {
+            dao.get(id).toMachine()
         }
     }
 
     override suspend fun store(machine: Machine) {
         return withContext(dispatcher) {
-            val entity = MachineEntity(
-                id = machine.id,
-                name = machine.name,
-                type = machine.type,
-                code = machine.code,
-                lastMaintain = machine.lastMaintain,
-            )
+            val entity = machine.toMachineEntity()
 
             val pictures = machine.pictures.map { picture ->
                 PictureEntity(
@@ -59,5 +51,25 @@ class DataRepository(
             dao.deletePictureByMachineId(machine.id)
             dao.insert(entity, pictures)
         }
+    }
+
+    private fun MachineEntity.toMachine(): Machine {
+        return Machine(
+            id = id,
+            name = name,
+            type = type,
+            code = code,
+            lastMaintain = lastMaintain,
+        )
+    }
+
+    private fun Machine.toMachineEntity(): MachineEntity {
+        return MachineEntity(
+            id = id,
+            name = name,
+            type = type,
+            code = code,
+            lastMaintain = lastMaintain,
+        )
     }
 }

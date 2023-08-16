@@ -8,5 +8,9 @@ interface DataSource {
         sortBy: String
     ): Flow<List<Machine>>
 
+    suspend fun get(
+        id: String
+    ): Machine
+
     suspend fun store(machine: Machine)
 }
