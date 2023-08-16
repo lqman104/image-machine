@@ -16,6 +16,15 @@ object DateHelper {
             val date = Date(this)
             simpleDateFormat.format(date)
         }
+    }
 
+    fun String?.dateToLong(toFormat: String = SIMPLE_DATE): Long {
+        return if (this.isNullOrEmpty()) {
+            0
+        } else {
+            val simpleDateFormat = SimpleDateFormat(SIMPLE_DATE, Locale.getDefault())
+            val date = simpleDateFormat.parse(this)
+            date?.time ?: 0
+        }
     }
 }

@@ -54,6 +54,7 @@ dependencies {
     implementation(project(":domain"))
     implementation(project(":data"))
     implementation(AndroidDependencies.AndroidX.CoreKtx.plugin)
+    implementation(AndroidDependencies.Util.ImageLoader.plugin)
     implementation(AndroidDependencies.AndroidX.Lifecycle.plugin)
     implementation(AndroidDependencies.AndroidX.Compose.ViewModel.plugin)
     implementation(AndroidDependencies.AndroidX.Compose.Activity.plugin)
