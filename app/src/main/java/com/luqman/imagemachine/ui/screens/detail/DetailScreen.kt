@@ -1,7 +1,6 @@
 package com.luqman.imagemachine.ui.screens.detail
 
 import android.net.Uri
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -71,6 +70,7 @@ import com.luqman.imagemachine.R
 import com.luqman.imagemachine.core.helper.DateHelper.toDate
 import com.luqman.imagemachine.core.model.Resource
 import com.luqman.imagemachine.ui.screens.detail.DetailScreen.GRID_COUNT
+import com.luqman.imagemachine.ui.screens.detail.SelectMultipleImageLauncher.multipleImagePickerLauncher
 import com.luqman.imagemachine.uikit.component.DatePickerComponent
 import com.luqman.imagemachine.uikit.component.LoadingComponent
 
@@ -145,10 +145,12 @@ fun DetailScreen(
     var itemsUri: List<Uri> by rememberSaveable {
         mutableStateOf(state.data.pictures.map { it.uri })
     }
-    val multiSelectImageLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.PickMultipleVisualMedia(maxItems = 10),
-        onResult = { uris ->
-            itemsUri = uris
+
+    val multiSelectImageLauncher = multipleImagePickerLauncher(
+        maxSize = 10,
+        currentList = itemsUri,
+        callback = { result ->
+            itemsUri = result
         }
     )
 
@@ -196,7 +198,7 @@ fun DetailScreen(
                 this.imageSection(
                     pictures = itemsUri,
                     onClickImageAdd = {
-                        multiSelectImageLauncher.launch(
+                        multiSelectImageLauncher?.launch(
                             PickVisualMediaRequest(mediaType = ActivityResultContracts.PickVisualMedia.ImageOnly)
                         )
                     },
@@ -331,15 +333,17 @@ fun DateInputField(
 
     var dateValue: Long? by rememberSaveable {
         // make sure the form is null when first launch
-        val longDate = if(value != null && value == 0L) null else value
+        val longDate = if (value != null && value == 0L) null else value
         mutableStateOf(longDate)
     }
 
     OutlinedTextField(
         value = dateValue.toDate(),
-        modifier = modifier.fillMaxWidth().clickable {
-            isDateDialogShow = true
-        },
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable {
+                isDateDialogShow = true
+            },
         enabled = false,
         readOnly = true,
         onValueChange = {},
