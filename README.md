@@ -48,7 +48,7 @@ This app uses [***Clean
 Architecture***](https://medium.com/android-dev-hacks/detailed-guide-on-android-clean-architecture-9eab262a9011)
 .
 
-![](art/clean-arch.jpeg)
+![](arts/clean-arch.jpeg)
 
 ## Module
 - core: utility and reuse class
