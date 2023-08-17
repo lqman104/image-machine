@@ -1,15 +1,17 @@
 package com.luqman.imagemachine.ui.screens.detail
 
+import android.content.ContentResolver
 import android.content.Context
-import android.database.Cursor
 import android.net.Uri
-import android.provider.MediaStore
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
+import java.io.File
+import java.io.FileOutputStream
+import java.util.UUID
 
 
 object SelectMultipleImageLauncher {
@@ -29,9 +31,10 @@ object SelectMultipleImageLauncher {
                 contract = ActivityResultContracts.PickMultipleVisualMedia(maxItems = remain),
                 onResult = { uris ->
                     if (uris.isNotEmpty()) {
-                        val paths = uris.map {
-                            it.getImageFilePath(context)
+                        val paths = uris.mapNotNull {
+                            it.saveContentToFile(context)
                         }
+
                         callback(
                             currentList.toMutableList().apply {
                                 addAll(paths)
@@ -48,7 +51,9 @@ object SelectMultipleImageLauncher {
                     if (uri != null) {
                         callback(
                             currentList.toMutableList().apply {
-                                addAll(listOf(uri.getImageFilePath(context)))
+                                uri.saveContentToFile(context)?.let {
+                                    addAll(listOf(it))
+                                }
                             }
                         )
                     }
@@ -59,27 +64,29 @@ object SelectMultipleImageLauncher {
         }
     }
 
-    private fun Uri.getImageFilePath(context: Context): String {
-        var cursor: Cursor? = null
-        val path: String = try {
-            cursor = context.contentResolver.query(
-                this,
-                arrayOf(MediaStore.Images.Media.DATA),
-                null,
-                null,
-                null
-            )
-            cursor?.let {
-                val column = it.getColumnIndex(MediaStore.Images.Media.DATA)
-                val data = if(column > 0) column else 0
-                it.moveToFirst()
-                it.getString(data)
-            }.orEmpty()
+    private fun Uri.saveContentToFile(context: Context): String? {
+        val contentResolver: ContentResolver = context.contentResolver
+
+        try {
+            val inputStream = contentResolver.openInputStream(this)
+
+            val appFilesDir = context.filesDir
+            val targetFile = File(appFilesDir, "${UUID.randomUUID()}.jpg")
+            val outputStream = FileOutputStream(targetFile)
+
+            val buffer = ByteArray(1024)
+            var bytesRead: Int
+            while (inputStream?.read(buffer).also { bytesRead = it!! } != -1) {
+                outputStream.write(buffer, 0, bytesRead)
+            }
+            outputStream.close()
+            inputStream?.close()
+
+            return targetFile.absolutePath
         } catch (e: Exception) {
-            ""
-        } finally {
-            cursor?.close()
+            e.printStackTrace()
         }
-        return path
+
+        return null
     }
 }
