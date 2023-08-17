@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="data_empty_error">Data required</string>
+  <string name="name_empty_error">Name can\'t be empty</string>
+  <string name="type_empty_error">Type can\'t be empty</string>
+  <string name="code_empty_error">Code can\'t be empty</string>
+  <string name="last_maintain_empty_error">Last maintain date can\'t be empty</string>
 </resources>
