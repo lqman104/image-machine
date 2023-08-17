@@ -11,6 +11,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.luqman.imagemachine.data.repository.model.SortMenuType
+import com.luqman.imagemachine.ui.navigation.Graph.Detail.CODE_KEY
 import com.luqman.imagemachine.ui.navigation.Graph.Detail.ID_KEY
 import com.luqman.imagemachine.ui.navigation.Graph.Main.TYPE_KEY
 import com.luqman.imagemachine.ui.screens.detail.DetailScreen
@@ -34,10 +35,16 @@ fun RootGraph(
         }
         composable(
             route = Graph.Detail.DETAIL_PAGE,
-            arguments = listOf(navArgument(ID_KEY) {
-                type = NavType.StringType
-                defaultValue = ""
-            })
+            arguments = listOf(
+                navArgument(ID_KEY) {
+                    type = NavType.StringType
+                    nullable = true
+                },
+                navArgument(CODE_KEY) {
+                    type = NavType.StringType
+                    nullable = true
+                }
+            )
         ) {
             DetailScreen(navController = controller)
         }
@@ -68,7 +75,7 @@ fun MainGraph(
             ListScreen(sortMenuType = sortMenuType, navHostController = rootController)
         }
         composable(Graph.Main.SEARCH_PAGE) {
-            SearchScreen()
+            SearchScreen(navHostController = rootController)
         }
     }
 }
@@ -93,8 +100,9 @@ object Graph {
 
     object Detail {
         const val ID_KEY: String = "machine_id"
+        const val CODE_KEY: String = "code"
 
-        const val DETAIL_PAGE = "detail_page/{$ID_KEY}"
+        const val DETAIL_PAGE = "detail_page?$ID_KEY={$ID_KEY}&$CODE_KEY={$CODE_KEY}"
         const val PREVIEW_PAGE = "preview_page"
 
         fun getDetailPage(): String {
@@ -103,6 +111,10 @@ object Graph {
 
         fun getDetailPageById(id: String): String {
             return DETAIL_PAGE.replace("{$ID_KEY}", id)
+        }
+
+        fun getDetailPageByCode(code: String): String {
+            return DETAIL_PAGE.replace("{$CODE_KEY}", code)
         }
     }
 }

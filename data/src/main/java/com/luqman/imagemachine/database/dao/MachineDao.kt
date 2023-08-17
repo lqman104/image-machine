@@ -20,6 +20,9 @@ interface MachineDao {
     @Query("SELECT * FROM machine_entity WHERE id = :id")
     suspend fun get(id: String): MachineWithPictures
 
+    @Query("SELECT * FROM machine_entity WHERE code = :code")
+    suspend fun getByCode(code: String): MachineWithPictures
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(machine: MachineEntity, pictures: List<PictureEntity>)
 

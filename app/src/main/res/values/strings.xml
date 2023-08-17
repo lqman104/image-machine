@@ -21,5 +21,7 @@
   <string name="error_title_message">An Error Occur</string>
   <string name="image_subtitle_text">Images (%d / 10)</string>
   <string name="button_delete">Delete</string>
+  <string name="search_button">Search</string>
+  <string name="recapture_button">Recapture</string>
 
 </resources>

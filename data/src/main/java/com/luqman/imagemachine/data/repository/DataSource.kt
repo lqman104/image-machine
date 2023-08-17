@@ -12,6 +12,10 @@ interface DataSource {
         id: String
     ): Machine
 
+    suspend fun getByCode(
+        code: String
+    ): Machine
+
     suspend fun delete(
         id: String
     )

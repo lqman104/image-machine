@@ -19,7 +19,8 @@ android {
         named("release") {
             isMinifyEnabled = false
             proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+                getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+            )
         }
     }
     compileOptions {
@@ -50,4 +51,10 @@ dependencies {
     testImplementation(AndroidDependencies.Test.JUnit.plugin)
     androidTestImplementation(AndroidDependencies.AndroidX.Test.JUnit.plugin)
     androidTestImplementation(AndroidDependencies.AndroidX.Test.Espresso.plugin)
+
+    // CameraX
+    implementation(AndroidDependencies.AndroidX.Camera.core)
+
+    // Zxing
+    implementation(AndroidDependencies.Util.Zxing.plugin)
 }

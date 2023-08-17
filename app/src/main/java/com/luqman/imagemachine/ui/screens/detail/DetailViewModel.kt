@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.luqman.imagemachine.core.model.Resource
 import com.luqman.imagemachine.data.repository.model.Machine
 import com.luqman.imagemachine.domain.usecase.DeleteMachineUseCase
+import com.luqman.imagemachine.domain.usecase.GetMachineByCodeUseCase
 import com.luqman.imagemachine.domain.usecase.GetMachineUseCase
 import com.luqman.imagemachine.domain.usecase.StoreMachineUseCase
 import com.luqman.imagemachine.ui.navigation.Graph
@@ -21,41 +22,58 @@ import javax.inject.Inject
 @HiltViewModel
 class DetailViewModel @Inject constructor(
     private val storeUseCase: StoreMachineUseCase,
-    private val getUseCase: GetMachineUseCase,
+    private val getUseCaseById: GetMachineUseCase,
+    private val getUseCaseByCode: GetMachineByCodeUseCase,
     private val deleteUseCase: DeleteMachineUseCase,
     saveState: SavedStateHandle
 ) : ViewModel() {
 
     private var id: String? = saveState.get<String>(Graph.Detail.ID_KEY)
+    private var code: String? = saveState.get<String>(Graph.Detail.CODE_KEY)
     private val _state: MutableStateFlow<DetailPageState> = MutableStateFlow(DetailPageState())
     val state = _state.asStateFlow()
 
     init {
         val id = id
-        if (!id.isNullOrEmpty() && id != "{${Graph.Detail.ID_KEY}}") {
-            getDetail(id)
+        val code = code
+
+        if (!id.isNullOrEmpty()) {
+            getDetailById(id)
+        } else if (!code.isNullOrEmpty()) {
+            getDetailByCode(code)
         }
     }
 
-    private fun getDetail(id: String) {
+    private fun getDetailById(id: String) {
         viewModelScope.launch {
-            getUseCase(id).collect { response ->
-                _state.value = _state.value.copy(
-                    detailGetResult = response
-                )
-
-                if (response is Resource.Success) {
-                    _state.value = _state.value.copy(
-                        id = response.data?.id.orEmpty(),
-                        name = response.data?.name.orEmpty(),
-                        type = response.data?.type.orEmpty(),
-                        code = response.data?.code.orEmpty(),
-                        lastMaintain = response.data?.lastMaintain ?: 0,
-                        pictures = response.data?.pictures.orEmpty().toMutableList(),
-                    )
-                }
-
+            getUseCaseById(id).collect { response ->
+                handleDetailResponse(response)
             }
+        }
+    }
+
+    private fun getDetailByCode(code: String) {
+        viewModelScope.launch {
+            getUseCaseByCode(code).collect { response ->
+                handleDetailResponse(response)
+            }
+        }
+    }
+
+    private fun handleDetailResponse(response: Resource<Machine>) {
+        _state.value = _state.value.copy(
+            detailGetResult = response
+        )
+
+        if (response is Resource.Success) {
+            _state.value = _state.value.copy(
+                id = response.data?.id.orEmpty(),
+                name = response.data?.name.orEmpty(),
+                type = response.data?.type.orEmpty(),
+                code = response.data?.code.orEmpty(),
+                lastMaintain = response.data?.lastMaintain ?: 0,
+                pictures = response.data?.pictures.orEmpty().toMutableList(),
+            )
         }
     }
 

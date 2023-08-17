@@ -79,4 +79,8 @@ dependencies {
     androidTestImplementation(platform (AndroidDependencies.AndroidX.Compose.Bom.plugin))
     debugImplementation(AndroidDependencies.AndroidX.Compose.Test.tooling)
     debugImplementation(AndroidDependencies.AndroidX.Compose.Test.manifest)
+
+    // CAMERA
+    implementation(AndroidDependencies.AndroidX.Camera.lifecycle)
+    implementation(AndroidDependencies.AndroidX.Camera.view)
 }

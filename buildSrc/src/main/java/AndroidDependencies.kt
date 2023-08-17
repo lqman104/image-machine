@@ -76,12 +76,25 @@ object AndroidDependencies {
                 val plugin = "androidx.test.espresso:espresso-core:$version"
             }
         }
+
+        object Camera {
+            private const val version = "1.2.3"
+            val core = "androidx.camera:camera-camera2:$version"
+            val lifecycle = "androidx.camera:camera-lifecycle:$version"
+            val view = "androidx.camera:camera-view:$version"
+        }
+
     }
 
     object Util {
         object ImageLoader {
             private const val version = "2.4.0"
             const val plugin = "io.coil-kt:coil-compose:$version"
+        }
+
+        object Zxing {
+            private const val version = "3.5.2"
+            val plugin = "com.google.zxing:core:$version"
         }
     }
 

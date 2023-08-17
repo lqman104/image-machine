@@ -38,6 +38,12 @@ class DataRepository(
         }
     }
 
+    override suspend fun getByCode(code: String): Machine {
+        return withContext(dispatcher) {
+            dao.getByCode(code).toMachine()
+        }
+    }
+
     override suspend fun delete(id: String) {
         return withContext(dispatcher) {
             dao.delete(id)

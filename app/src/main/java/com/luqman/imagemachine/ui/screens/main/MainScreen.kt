@@ -77,8 +77,10 @@ fun MainScreen(
     Scaffold(
         modifier = modifier,
         floatingActionButton = {
-            FloatingActionButtonHome {
-                rootNavHostController.navigate(Graph.Detail.getDetailPage())
+            if (isListScreen) {
+                FloatingActionButtonHome {
+                    rootNavHostController.navigate(Graph.Detail.getDetailPage())
+                }
             }
         },
         bottomBar = {
