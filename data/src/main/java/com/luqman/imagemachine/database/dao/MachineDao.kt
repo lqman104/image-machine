@@ -24,7 +24,7 @@ interface MachineDao {
     suspend fun insert(machine: MachineEntity, pictures: List<PictureEntity>)
 
     @Query("DELETE FROM machine_entity WHERE id=:id")
-    suspend fun delete(id: Int)
+    suspend fun delete(id: String)
 
     @Query("DELETE FROM picture_entity WHERE machine_id=:machineId")
     suspend fun deletePictureByMachineId(machineId: String)

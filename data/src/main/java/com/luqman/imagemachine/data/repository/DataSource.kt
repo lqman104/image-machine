@@ -12,5 +12,9 @@ interface DataSource {
         id: String
     ): Machine
 
+    suspend fun delete(
+        id: String
+    )
+
     suspend fun store(machine: Machine)
 }

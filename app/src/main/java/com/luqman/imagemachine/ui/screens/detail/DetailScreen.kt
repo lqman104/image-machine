@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridScope
@@ -34,6 +36,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -103,10 +106,28 @@ fun DetailScreen(
         onTypeChanged = { viewModel.updateType(it) },
         onCodeChanged = { viewModel.updateCode(it) },
         onLastMaintainChanged = { viewModel.updateLastMaintain(it) },
-    ) {
-        viewModel.save()
-    }
+        onSave = { viewModel.save() },
+        onDelete = { viewModel.delete() }
+    )
     when (state.saveResult) {
+        is Resource.Loading -> {
+            isLoading = true
+        }
+
+        is Resource.Success -> {
+            isLoading = false
+            navController.navigateUp()
+        }
+
+        is Resource.Error -> {
+            isLoading = false
+            errorMessage = state.saveResult?.error.toString()
+        }
+
+        else -> {}
+    }
+
+    when (state.deleteResult) {
         is Resource.Loading -> {
             isLoading = true
         }
@@ -174,7 +195,8 @@ fun DetailScreen(
     onCodeChanged: (String) -> Unit,
     onLastMaintainChanged: (Long) -> Unit,
     onNavigateBack: () -> Unit,
-    onSave: () -> Unit
+    onSave: () -> Unit,
+    onDelete: () -> Unit
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -204,13 +226,30 @@ fun DetailScreen(
             }
         },
         bottomBar = {
-            Button(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(all = 16.dp),
-                onClick = onSave
-            ) {
-                Text(text = stringResource(id = R.string.button_save))
+            Row {
+                if (!state.id.isNullOrEmpty()) {
+                    OutlinedButton(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                            .padding(start = 16.dp, bottom = 16.dp, top = 16.dp),
+                        onClick = onDelete
+                    ) {
+                        Text(text = stringResource(id = R.string.button_delete))
+                    }
+                }
+                
+                Spacer(modifier = Modifier.width(16.dp))
+
+                Button(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .padding(end = 16.dp, bottom = 16.dp, top = 16.dp),
+                    onClick = onSave
+                ) {
+                    Text(text = stringResource(id = R.string.button_save))
+                }
             }
         }
     ) { padding ->
@@ -481,6 +520,7 @@ fun DetailScreenPreview() {
         onTypeChanged = {},
         onCodeChanged = {},
         onLastMaintainChanged = {},
+        onDelete = {},
     )
 }
 

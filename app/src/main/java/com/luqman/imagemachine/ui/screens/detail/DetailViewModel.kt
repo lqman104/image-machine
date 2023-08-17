@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.luqman.imagemachine.core.model.Resource
 import com.luqman.imagemachine.data.repository.model.Machine
+import com.luqman.imagemachine.domain.usecase.DeleteMachineUseCase
 import com.luqman.imagemachine.domain.usecase.GetMachineUseCase
 import com.luqman.imagemachine.domain.usecase.StoreMachineUseCase
 import com.luqman.imagemachine.ui.navigation.Graph
@@ -21,32 +22,31 @@ import javax.inject.Inject
 class DetailViewModel @Inject constructor(
     private val storeUseCase: StoreMachineUseCase,
     private val getUseCase: GetMachineUseCase,
+    private val deleteUseCase: DeleteMachineUseCase,
     saveState: SavedStateHandle
 ) : ViewModel() {
 
     private var id: String? = saveState.get<String>(Graph.Detail.ID_KEY)
-    private var machineId: String? = null
     private val _state: MutableStateFlow<DetailPageState> = MutableStateFlow(DetailPageState())
     val state = _state.asStateFlow()
 
     init {
         val id = id
         if (!id.isNullOrEmpty() && id != "{${Graph.Detail.ID_KEY}}") {
-            machineId = id
             getDetail(id)
         }
     }
 
     private fun getDetail(id: String) {
         viewModelScope.launch {
-            getUseCase(id).collect {
-                    response ->
+            getUseCase(id).collect { response ->
                 _state.value = _state.value.copy(
                     detailGetResult = response
                 )
 
                 if (response is Resource.Success) {
                     _state.value = _state.value.copy(
+                        id = response.data?.id.orEmpty(),
                         name = response.data?.name.orEmpty(),
                         type = response.data?.type.orEmpty(),
                         code = response.data?.code.orEmpty(),
@@ -55,6 +55,16 @@ class DetailViewModel @Inject constructor(
                     )
                 }
 
+            }
+        }
+    }
+
+    fun delete() {
+        viewModelScope.launch {
+            deleteUseCase(_state.value.id.orEmpty()).collect { response ->
+                _state.value = _state.value.copy(
+                    deleteResult = response
+                )
             }
         }
     }
@@ -92,7 +102,7 @@ class DetailViewModel @Inject constructor(
     }
 
     fun save() {
-        val id = machineId ?: UUID.randomUUID().toString()
+        val id = _state.value.id ?: UUID.randomUUID().toString()
         val machine = with(_state.value) {
             Machine(
                 id = id,

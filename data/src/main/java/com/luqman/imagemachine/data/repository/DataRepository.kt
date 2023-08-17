@@ -38,6 +38,12 @@ class DataRepository(
         }
     }
 
+    override suspend fun delete(id: String) {
+        return withContext(dispatcher) {
+            dao.delete(id)
+        }
+    }
+
     override suspend fun store(machine: Machine) {
         return withContext(dispatcher) {
             val entity = machine.toMachineEntity()
