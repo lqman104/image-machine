@@ -71,6 +71,7 @@ import coil.compose.AsyncImage
 import com.luqman.imagemachine.R
 import com.luqman.imagemachine.core.helper.DateHelper.toDate
 import com.luqman.imagemachine.core.model.Resource
+import com.luqman.imagemachine.core.model.asString
 import com.luqman.imagemachine.ui.navigation.Graph
 import com.luqman.imagemachine.ui.screens.detail.DetailScreen.GRID_COUNT
 import com.luqman.imagemachine.ui.screens.detail.SelectMultipleImageLauncher.rememberMultipleImagePickerLauncher
@@ -125,7 +126,7 @@ fun DetailScreen(
 
         is Resource.Error -> {
             isLoading = false
-            errorMessage = state.saveResult?.error.toString()
+            errorMessage = state.saveResult?.error?.asString()
         }
 
         else -> {}
@@ -212,10 +213,10 @@ fun DetailScreen(
         callback = selectPicturesListener
     )
 
-    if (errorMessage.isNullOrEmpty().not()) {
-        LaunchedEffect(Unit) {
+    LaunchedEffect(errorMessage) {
+        if (!errorMessage.isNullOrEmpty()) {
             snackbarHostState.showSnackbar(
-                message = errorMessage.orEmpty()
+                message = errorMessage
             )
         }
     }
