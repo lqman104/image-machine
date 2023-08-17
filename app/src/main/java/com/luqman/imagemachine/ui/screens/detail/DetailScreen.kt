@@ -71,6 +71,7 @@ import coil.compose.AsyncImage
 import com.luqman.imagemachine.R
 import com.luqman.imagemachine.core.helper.DateHelper.toDate
 import com.luqman.imagemachine.core.model.Resource
+import com.luqman.imagemachine.ui.navigation.Graph
 import com.luqman.imagemachine.ui.screens.detail.DetailScreen.GRID_COUNT
 import com.luqman.imagemachine.ui.screens.detail.SelectMultipleImageLauncher.rememberMultipleImagePickerLauncher
 import com.luqman.imagemachine.uikit.component.DatePickerComponent
@@ -107,7 +108,10 @@ fun DetailScreen(
         onCodeChanged = { viewModel.updateCode(it) },
         onLastMaintainChanged = { viewModel.updateLastMaintain(it) },
         onSave = { viewModel.save() },
-        onDelete = { viewModel.delete() }
+        onDelete = { viewModel.delete() },
+        onImageClicked = {
+            navController.navigate(Graph.Detail.getPhotoByMachineId(state.pictures.joinToString()))
+        }
     )
     when (state.saveResult) {
         is Resource.Loading -> {
@@ -196,7 +200,8 @@ fun DetailScreen(
     onLastMaintainChanged: (Long) -> Unit,
     onNavigateBack: () -> Unit,
     onSave: () -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    onImageClicked: () -> Unit,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -238,7 +243,7 @@ fun DetailScreen(
                         Text(text = stringResource(id = R.string.button_delete))
                     }
                 }
-                
+
                 Spacer(modifier = Modifier.width(16.dp))
 
                 Button(
@@ -284,7 +289,8 @@ fun DetailScreen(
                                 removeAt(index)
                             }
                             selectPicturesListener(list)
-                        }
+                        },
+                        onImageClicked = onImageClicked
                     )
                 }
             }
@@ -302,6 +308,18 @@ private fun LazyGridScope.formSection(
 ) {
     item(span = { GridItemSpan(GRID_COUNT) }, key = "form machine", contentType = "form machine") {
         Column(modifier) {
+            if (!state.id.isNullOrEmpty()) {
+                InputField(
+                    modifier = Modifier.padding(bottom = 12.dp),
+                    value = state.id.orEmpty(),
+                    readOnly = true,
+                    enable = false,
+                    label = stringResource(id = R.string.machine_id_input_label),
+                    placeholder = "",
+                    onChange = {}
+                )
+            }
+
             InputField(
                 modifier = Modifier.padding(bottom = 12.dp),
                 value = state.name,
@@ -340,6 +358,7 @@ fun LazyGridScope.imageSection(
     modifier: Modifier = Modifier,
     pictures: List<String>,
     onDeleteImage: (Int) -> Unit,
+    onImageClicked: () -> Unit,
     onClickImageAdd: () -> Unit
 ) {
     val picturesSize = pictures.size
@@ -363,6 +382,7 @@ fun LazyGridScope.imageSection(
     itemsIndexed(pictures) { index, picture ->
         ImageThumbnail(
             picture = picture,
+            onImageClicked = onImageClicked,
             onDeleteImage = {
                 onDeleteImage(index)
             }
@@ -373,6 +393,8 @@ fun LazyGridScope.imageSection(
 @Composable
 fun InputField(
     modifier: Modifier = Modifier,
+    readOnly: Boolean = false,
+    enable: Boolean = true,
     value: String,
     placeholder: String,
     label: String,
@@ -380,6 +402,8 @@ fun InputField(
 ) {
     OutlinedTextField(
         value = value,
+        readOnly = readOnly,
+        enabled = enable,
         modifier = modifier.fillMaxWidth(),
         onValueChange = onChange,
         label = {
@@ -438,7 +462,8 @@ fun DateInputField(
 fun ImageThumbnail(
     modifier: Modifier = Modifier,
     picture: String,
-    onDeleteImage: () -> Unit
+    onImageClicked: () -> Unit,
+    onDeleteImage: () -> Unit,
 ) {
     Box(modifier = modifier.aspectRatio(1f)) {
         AsyncImage(
@@ -446,7 +471,10 @@ fun ImageThumbnail(
             contentDescription = "",
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(shape = RoundedCornerShape(corner = CornerSize(16.dp))),
+                .clip(shape = RoundedCornerShape(corner = CornerSize(16.dp)))
+                .clickable {
+                    onImageClicked()
+                },
             contentScale = ContentScale.Crop,
             onError = {
                 Timber.e(it.result.throwable)
@@ -521,6 +549,7 @@ fun DetailScreenPreview() {
         onCodeChanged = {},
         onLastMaintainChanged = {},
         onDelete = {},
+        onImageClicked = {},
     )
 }
 
@@ -537,7 +566,7 @@ fun ButtonAddImagePreview() {
 @Preview
 @Composable
 fun ImageThumbnailPreview() {
-    ImageThumbnail(picture = "", onDeleteImage = {})
+    ImageThumbnail(picture = "", onDeleteImage = {}, onImageClicked = {})
 }
 
 object DetailScreen {

@@ -23,5 +23,6 @@
   <string name="button_delete">Delete</string>
   <string name="search_button">Search</string>
   <string name="recapture_button">Recapture</string>
+  <string name="machine_id_input_label">Machine ID</string>
 
 </resources>

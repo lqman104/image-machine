@@ -100,13 +100,18 @@ object Graph {
 
     object Detail {
         const val ID_KEY: String = "machine_id"
+        const val PICTURES_KEY: String = "pictures"
         const val CODE_KEY: String = "code"
 
         const val DETAIL_PAGE = "detail_page?$ID_KEY={$ID_KEY}&$CODE_KEY={$CODE_KEY}"
-        const val PREVIEW_PAGE = "preview_page"
+        const val PREVIEW_PAGE = "preview_page?$PICTURES_KEY={$PICTURES_KEY}"
 
         fun getDetailPage(): String {
             return DETAIL_PAGE
+        }
+
+        fun getPhotoByMachineId(id: String): String {
+            return PREVIEW_PAGE.replace("{$PICTURES_KEY}", id)
         }
 
         fun getDetailPageById(id: String): String {
